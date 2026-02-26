@@ -1,0 +1,5 @@
+{
+  "name": "HCPA HRMS",
+  "description": "Human Resource Management System for Hospital de Clínicas de Porto Alegre (HCPA), managing staff, shifts, and compliance.",
+  "requestFramePermissions": ["geolocation"]
+}

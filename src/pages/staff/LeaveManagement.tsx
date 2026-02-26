@@ -1,0 +1,288 @@
+import React, { useState, useRef } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  Grid, 
+  TextField, 
+  MenuItem, 
+  Button, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Chip,
+  IconButton,
+  Paper,
+  Snackbar,
+  Alert,
+  Avatar
+} from '@mui/material';
+import { FileUp, Send, History, Calendar as CalendarIcon, Info, CheckCircle, XCircle } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useLeave } from '../../contexts/LeaveContext';
+import { UserRole } from '../../types';
+
+export default function LeaveManagement() {
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const { leaveRequests, addLeaveRequest, updateLeaveStatus } = useLeave();
+  
+  const [leaveType, setLeaveType] = useState('Annual');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [reason, setReason] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+
+  const isAdmin = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.HR_MANAGER || user?.role === UserRole.DEPT_HEAD;
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!startDate || !endDate || !reason) {
+      setSnackbar({ open: true, message: 'Please fill in all required fields (Start Date, End Date, Reason).', severity: 'error' });
+      return;
+    }
+
+    const newLeave = {
+      type: leaveType,
+      start: startDate,
+      end: endDate,
+      reason: reason
+    };
+
+    addLeaveRequest(newLeave);
+    
+    // Reset form
+    setStartDate('');
+    setEndDate('');
+    setReason('');
+    setSelectedFile(null);
+    setSnackbar({ open: true, message: 'Leave request submitted successfully!', severity: 'success' });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  if (isAdmin) {
+    return (
+      <Box sx={{ p: { xs: 2, md: 4 }, pb: { xs: 10, md: 4 } }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Leave Requests</Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>Review and manage employee leave requests.</Typography>
+
+        <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ bgcolor: 'grey.50' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>EMPLOYEE</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>TYPE</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>DATES</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>REASON</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>STATUS</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, fontSize: 12 }}>ACTIONS</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {leaveRequests.map((leave) => (
+                  <TableRow key={leave.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.light', color: 'primary.main', fontWeight: 700, fontSize: 14 }}>
+                          {leave.employeeName.charAt(0)}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{leave.employeeName}</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{leave.type}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{leave.start}</Typography>
+                      <Typography variant="caption" color="text.secondary">to {leave.end}</Typography>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 200 }}>
+                      <Typography variant="body2" noWrap title={leave.reason}>{leave.reason}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={leave.status} 
+                        size="small" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          fontSize: 10,
+                          bgcolor: leave.status === 'Approved' ? 'success.light' : leave.status === 'Rejected' ? 'error.light' : 'warning.light',
+                          color: leave.status === 'Approved' ? 'success.main' : leave.status === 'Rejected' ? 'error.main' : 'warning.main'
+                        }} 
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      {leave.status === 'Pending' ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          <IconButton size="small" color="success" onClick={() => { updateLeaveStatus(leave.id, 'Approved'); setSnackbar({ open: true, message: 'Leave request approved.', severity: 'success' }); }}>
+                            <CheckCircle size={18} />
+                          </IconButton>
+                          <IconButton size="small" color="error" onClick={() => { updateLeaveStatus(leave.id, 'Rejected'); setSnackbar({ open: true, message: 'Leave request rejected.', severity: 'error' }); }}>
+                            <XCircle size={18} />
+                          </IconButton>
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">Processed</Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Card>
+        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: { xs: 2, md: 4 }, pb: { xs: 10, md: 4 } }}>
+      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('applyLeave')}</Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>Submit and track your leave requests.</Typography>
+
+      <Grid container spacing={4}>
+        {/* Application Form */}
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
+                  select
+                  fullWidth
+                  label={t('leaveType')}
+                  value={leaveType}
+                  onChange={(e) => setLeaveType(e.target.value)}
+                >
+                  <MenuItem value="Annual">{t('annualLeave')}</MenuItem>
+                  <MenuItem value="Sick">{t('sickLeave')}</MenuItem>
+                  <MenuItem value="Maternity">Maternity Leave</MenuItem>
+                  <MenuItem value="Unpaid">Unpaid Leave</MenuItem>
+                </TextField>
+
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}>
+                    <TextField fullWidth label={t('startDate')} type="date" InputLabelProps={{ shrink: true }} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <TextField fullWidth label={t('endDate')} type="date" InputLabelProps={{ shrink: true }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  </Grid>
+                </Grid>
+
+                <TextField fullWidth label={t('reason')} multiline rows={3} placeholder="Briefly explain your request..." value={reason} onChange={(e) => setReason(e.target.value)} />
+
+                <Box 
+                  onClick={handleUploadClick}
+                  sx={{ 
+                    p: 3, 
+                    border: '2px dashed', 
+                    borderColor: selectedFile ? 'primary.main' : '#e2e8f0',
+                    bgcolor: selectedFile ? 'primary.50' : 'transparent',
+                    borderRadius: 3, 
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: 'grey.50', borderColor: 'primary.main' }
+                  }}
+                >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    onChange={handleFileChange} 
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
+                  <FileUp size={32} color={selectedFile ? "#2b7cee" : "#94a3b8"} style={{ marginBottom: '8px' }} />
+                  <Typography variant="body2" color={selectedFile ? "primary.main" : "text.secondary"} sx={{ fontWeight: selectedFile ? 700 : 400 }}>
+                    {selectedFile ? selectedFile.name : t('uploadReport')}
+                  </Typography>
+                  {!selectedFile && <Typography variant="caption" color="text.disabled">PDF, JPG up to 5MB</Typography>}
+                </Box>
+
+                <Button variant="contained" fullWidth size="large" startIcon={<Send size={18} />} sx={{ py: 1.5 }} onClick={handleSubmit}>
+                  Submit Request
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Status Tracker */}
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
+            <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <History size={20} color="#2b7cee" />
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>Leave History</Typography>
+            </Box>
+            <TableContainer>
+              <Table>
+                <TableHead sx={{ bgcolor: 'grey.50' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>TYPE</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>DATES</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>STATUS</TableCell>
+                    <TableCell align="right"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {leaveRequests.filter(req => req.employeeName === 'Sarah Jenkins').map((leave) => (
+                    <TableRow key={leave.id} hover>
+                      <TableCell sx={{ fontWeight: 600 }}>{leave.type}</TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{leave.start}</Typography>
+                        <Typography variant="caption" color="text.secondary">to {leave.end}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={leave.status} 
+                          size="small" 
+                          sx={{ 
+                            fontWeight: 700, 
+                            fontSize: 10,
+                            bgcolor: leave.status === 'Approved' ? 'success.light' : leave.status === 'Rejected' ? 'error.light' : 'warning.light',
+                            color: leave.status === 'Approved' ? 'success.main' : leave.status === 'Rejected' ? 'error.main' : 'warning.main'
+                          }} 
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton size="small"><Info size={16} /></IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+}
