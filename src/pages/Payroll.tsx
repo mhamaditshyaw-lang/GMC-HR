@@ -1,6 +1,7 @@
-import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment, IconButton, LinearProgress } from '@mui/material';
-import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, CheckCircle2, AlertCircle, MoreHorizontal, ArrowUpRight, Wallet, ReceiptText } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from '@mui/material';
+import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, AlertCircle, MoreHorizontal, ArrowUpRight, ReceiptText, Eye, FileText, Edit, X, Sliders } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -29,6 +30,102 @@ const stats = [
 ];
 
 export default function Payroll() {
+  const navigate = useNavigate();
+  const [employees, setEmployees] = useState(payrollData);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  
+  const open = Boolean(anchorEl);
+  const selectedEmployee = employees.find(emp => emp.id === selectedId);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, id: number) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedId(id);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleViewDetails = () => {
+    setViewDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleEditEntry = () => {
+    setEditDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleDownloadSlip = () => {
+    setSnackbarMessage(`Downloading payslip for ${selectedEmployee?.name}...`);
+    setSnackbarOpen(true);
+    handleMenuClose();
+    // Simulate download delay
+    setTimeout(() => {
+        setSnackbarMessage(`Payslip downloaded successfully.`);
+    }, 2000);
+  };
+
+  const handleDownloadReports = () => {
+    const headers = ['ID', 'Name', 'Role', 'Base Salary', 'Bonus', 'Deductions', 'Net Pay', 'Status'];
+    const rows = employees.map(emp => [
+      emp.id,
+      emp.name,
+      emp.role,
+      emp.base.replace(/,/g, ''),
+      emp.bonus.replace(/,/g, ''),
+      emp.deductions.replace(/,/g, ''),
+      emp.net.replace(/,/g, ''),
+      emp.status
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(r => r.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Payroll_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    setSnackbarMessage('Payroll report downloaded successfully.');
+    setSnackbarOpen(true);
+  };
+
+  const handleProcessPayroll = () => {
+    const pendingCount = employees.filter(e => e.status === 'Pending').length;
+    
+    if (pendingCount === 0) {
+      setSnackbarMessage('All payrolls are already processed.');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setEmployees(prev => prev.map(emp => 
+      emp.status === 'Pending' ? { ...emp, status: 'Paid' } : emp
+    ));
+
+    setSnackbarMessage(`Successfully processed ${pendingCount} pending payroll(s).`);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseDialogs = () => {
+    setViewDialogOpen(false);
+    setEditDialogOpen(false);
+    setSelectedId(null);
+  };
+
   return (
     <Box sx={{ p: 4 }}>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -37,8 +134,9 @@ export default function Payroll() {
           <Typography variant="body1" color="text.secondary">Process salaries, bonuses, and track financial distributions.</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" startIcon={<Download size={18} />}>Download Reports</Button>
-          <Button variant="contained" startIcon={<CreditCard size={18} />}>Process Payroll</Button>
+          <Button variant="outlined" startIcon={<Sliders size={18} />} onClick={() => navigate('/payroll/adjustments')}>Adjustments</Button>
+          <Button variant="outlined" startIcon={<Download size={18} />} onClick={handleDownloadReports}>Download Reports</Button>
+          <Button variant="contained" startIcon={<CreditCard size={18} />} onClick={handleProcessPayroll}>Process Payroll</Button>
         </Box>
       </Box>
 
@@ -99,7 +197,7 @@ export default function Payroll() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {payrollData.map((row) => (
+                  {employees.map((row) => (
                     <TableRow key={row.id} hover>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -127,7 +225,9 @@ export default function Payroll() {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton size="small"><MoreHorizontal size={18} /></IconButton>
+                        <IconButton size="small" onClick={(e) => handleMenuOpen(e, row.id)}>
+                          <MoreHorizontal size={18} />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -137,6 +237,141 @@ export default function Payroll() {
           </Card>
         </Grid>
       </Grid>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            overflow: 'visible',
+            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            mt: 1.5,
+            '& .MuiAvatar-root': {
+              width: 32,
+              height: 32,
+              ml: -0.5,
+              mr: 1,
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem onClick={handleViewDetails}>
+          <ListItemIcon>
+            <Eye size={18} />
+          </ListItemIcon>
+          <ListItemText>View Details</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleDownloadSlip}>
+          <ListItemIcon>
+            <FileText size={18} />
+          </ListItemIcon>
+          <ListItemText>Download Slip</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleEditEntry}>
+          <ListItemIcon>
+            <Edit size={18} />
+          </ListItemIcon>
+          <ListItemText>Edit Entry</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* View Details Dialog */}
+      <Dialog open={viewDialogOpen} onClose={handleCloseDialogs} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          Payroll Details
+          <IconButton onClick={handleCloseDialogs} size="small">
+            <X size={20} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedEmployee && (
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Avatar src={selectedEmployee.avatar} sx={{ width: 64, height: 64 }} />
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{selectedEmployee.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{selectedEmployee.role}</Typography>
+                  <Chip 
+                    label={selectedEmployee.status} 
+                    size="small" 
+                    sx={{ mt: 0.5, bgcolor: selectedEmployee.status === 'Paid' ? 'success.light' : 'warning.light', color: selectedEmployee.status === 'Paid' ? 'success.main' : 'warning.main', fontWeight: 600 }} 
+                  />
+                </Box>
+              </Box>
+              
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>Base Salary</Typography>
+                  <Typography variant="h6">{selectedEmployee.base}</Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>Bonus</Typography>
+                  <Typography variant="h6" color="success.main">{selectedEmployee.bonus}</Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>Deductions</Typography>
+                  <Typography variant="h6" color="error.main">{selectedEmployee.deductions}</Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>Net Pay</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{selectedEmployee.net}</Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialogs}>Close</Button>
+          <Button variant="contained" startIcon={<Download size={16} />} onClick={handleDownloadSlip}>Download Slip</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Entry Dialog */}
+      <Dialog open={editDialogOpen} onClose={handleCloseDialogs} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          Edit Payroll Entry
+          <IconButton onClick={handleCloseDialogs} size="small">
+            <X size={20} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedEmployee && (
+            <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Avatar src={selectedEmployee.avatar} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{selectedEmployee.name}</Typography>
+              </Box>
+              <TextField label="Base Salary" defaultValue={selectedEmployee.base.replace('$', '').replace(',', '')} fullWidth InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+              <TextField label="Bonus" defaultValue={selectedEmployee.bonus.replace('$', '').replace(',', '')} fullWidth InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+              <TextField label="Deductions" defaultValue={selectedEmployee.deductions.replace('$', '').replace(',', '')} fullWidth InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+              <TextField label="Status" select defaultValue={selectedEmployee.status} fullWidth SelectProps={{ native: true }}>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+              </TextField>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialogs}>Cancel</Button>
+          <Button variant="contained" onClick={() => { handleCloseDialogs(); setSnackbarMessage('Entry updated successfully'); setSnackbarOpen(true); }}>Save Changes</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

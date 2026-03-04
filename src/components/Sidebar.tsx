@@ -13,7 +13,8 @@ import {
   PlusCircle,
   Globe,
   Umbrella,
-  User
+  User,
+  Bot
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -51,6 +52,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
       titleKey: 'menuOperations',
       items: [
         { text: 'Attendance', key: 'attendance', icon: <Clock size={20} />, path: '/attendance', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD] },
+        { text: 'Automation', key: 'attendanceAutomation', icon: <Bot size={20} />, path: '/attendance/automation', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER] },
         { text: 'Schedules', key: 'schedules', icon: <CalendarDays size={20} />, path: '/roster', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF] },
         { text: 'Leave', key: 'applyLeave', icon: <Umbrella size={20} />, path: '/leave', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.STAFF, UserRole.DEPT_HEAD] },
       ]
