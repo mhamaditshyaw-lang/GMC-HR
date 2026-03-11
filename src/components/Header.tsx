@@ -5,6 +5,7 @@ import { useThemeMode } from '../contexts/ThemeContext';
 import { useNotifications, NotificationType } from '../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -15,6 +16,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -55,9 +57,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
       position: 'sticky',
       top: 0,
       zIndex: 10,
-      bgcolor: mode === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(15, 23, 42, 0.85)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: mode === 'light' ? '1px solid rgba(226, 232, 240, 0.6)' : '1px solid rgba(255, 255, 255, 0.05)'
+      background: mode === 'light' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(24, 24, 27, 0.8)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      borderBottom: mode === 'light' ? '1px solid rgba(255, 255, 255, 0.8)' : '1px solid rgba(255, 255, 255, 0.05)'
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%', maxWidth: { xs: 'none', md: 400 } }}>
         <IconButton 
@@ -69,7 +72,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         
         <TextField
           fullWidth
-          placeholder="Search..."
+          placeholder={t('search')}
           sx={{ display: { xs: 'none', sm: 'flex' } }}
           InputProps={{
             startAdornment: (
@@ -95,7 +98,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             ),
             sx: { 
               borderRadius: 3, 
-              bgcolor: 'white',
+              bgcolor: 'background.paper',
               '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
             }
@@ -129,14 +132,22 @@ export default function Header({ onMenuClick }: HeaderProps) {
             horizontal: 'right',
           }}
           PaperProps={{
-            sx: { width: 360, maxHeight: 500, mt: 1.5, borderRadius: 3, boxShadow: '0px 4px 20px rgba(0,0,0,0.1)' }
+            sx: { 
+              width: 360, 
+              maxHeight: 500, 
+              mt: 1.5, 
+              borderRadius: 3, 
+              boxShadow: mode === 'light' ? '0px 4px 20px rgba(0,0,0,0.1)' : '0px 4px 20px rgba(0,0,0,0.4)',
+              background: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 23, 42, 0.8)',
+              backdropFilter: 'blur(24px)',
+            }
           }}
         >
           <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="subtitle1" fontWeight={700}>Notifications</Typography>
+            <Typography variant="subtitle1" fontWeight={700}>{t('notifications')}</Typography>
             {unreadCount > 0 && (
               <Button size="small" onClick={markAllAsRead} sx={{ fontSize: 12 }}>
-                Mark all as read
+                {t('markAllAsRead')}
               </Button>
             )}
           </Box>
@@ -145,7 +156,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             {notifications.length === 0 ? (
               <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
                 <Bell size={40} style={{ opacity: 0.2, marginBottom: 8 }} />
-                <Typography variant="body2">No notifications yet</Typography>
+                <Typography variant="body2">{t('noNotifications')}</Typography>
               </Box>
             ) : (
               notifications.map((notification) => (
@@ -162,8 +173,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     <ListItemButton 
                       onClick={() => handleNotificationClick(notification.id, notification.link)}
                       sx={{ 
-                        bgcolor: notification.read ? 'transparent' : 'action.hover',
-                        borderLeft: notification.read ? '3px solid transparent' : '3px solid #3b82f6'
+                        background: notification.read ? 'rgba(255, 255, 255, 0)' : 'action.hover',
+                        borderLeft: notification.read ? '3px solid rgba(255, 255, 255, 0)' : '3px solid #3b82f6'
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 40 }}>

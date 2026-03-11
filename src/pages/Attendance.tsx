@@ -1,11 +1,136 @@
-import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment, IconButton } from '@mui/material';
-import { Clock, Search, Filter, Download, Calendar, CheckCircle2, XCircle, AlertCircle, MoreHorizontal, X, Sun, Moon, MapPin, Upload, FileText } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, ToggleButton, ToggleButtonGroup, MenuItem, Select, FormControl, InputLabel, Menu } from '@mui/material';
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Chip, TextField, InputAdornment, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, ToggleButton, ToggleButtonGroup, MenuItem, Select, FormControl, InputLabel, Menu, Alert } from '@mui/material';
+import { Clock, Search, Filter, Download, Calendar, CheckCircle2, XCircle, AlertCircle, MoreHorizontal, X, Sun, Moon, MapPin, Upload, FileText, ChevronRight, QrCode } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'motion/react';
 import { parse, isSameDay } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useThemeMode } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+
+const containerVariants: any = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants: any = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
+
+// Magnetic Button Component
+const MagneticButton = ({ children, onClick, variant = 'contained', startIcon, sx, fullWidth }: any) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const springConfig = { damping: 15, stiffness: 150, mass: 0.1 };
+  const springX = useSpring(x, springConfig);
+  const springY = useSpring(y, springConfig);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((e.clientX - centerX) * 0.2);
+    y.set((e.clientY - centerY) * 0.2);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: springX, y: springY, display: fullWidth ? 'block' : 'inline-block', width: fullWidth ? '100%' : 'auto' }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <Button 
+        variant={variant} 
+        startIcon={startIcon} 
+        onClick={onClick}
+        fullWidth={fullWidth}
+        sx={{
+          ...sx,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': variant === 'contained' ? {
+            content: '""',
+            position: 'absolute',
+            top: 0, left: '-100%', width: '200%', height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+            transition: 'all 0.5s ease',
+          } : {},
+          '&:hover::before': variant === 'contained' ? {
+            left: '100%'
+          } : {}
+        }}
+      >
+        {children}
+      </Button>
+    </motion.div>
+  );
+};
+
+// Animated Icon Component
+const AnimatedIcon = ({ icon: Icon, color, delay = 0 }: any) => {
+  return (
+    <motion.div
+      initial={{ rotate: -10, scale: 0.9 }}
+      animate={{ rotate: 10, scale: 1.1 }}
+      transition={{ repeat: Infinity, repeatType: 'reverse', duration: 2, delay, ease: 'easeInOut' }}
+      style={{ color, display: 'flex' }}
+    >
+      <Icon size={24} />
+    </motion.div>
+  );
+};
+
+// Pulsing Chip Component
+const PulsingChip = ({ label, status, mode }: any) => {
+  const isSuccess = status === 'On Time';
+  const isWarning = status === 'Late';
+  const isAbsent = status === 'Absent';
+  
+  const color = isSuccess ? 'success.main' : isWarning ? 'warning.main' : isAbsent ? 'error.main' : 'primary.main';
+  const hexColor = isSuccess ? '#10b981' : isWarning ? '#f59e0b' : isAbsent ? '#ef4444' : '#6366f1';
+  const bgColor = mode === 'light' ? `${hexColor}20` : `${hexColor}30`;
+
+  return (
+    <motion.div
+      animate={{
+        boxShadow: [
+          `0 0 0 0 ${hexColor}40`,
+          `0 0 0 6px ${hexColor}00`
+        ]
+      }}
+      transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+      style={{ borderRadius: 8 }}
+    >
+      <Chip 
+        label={label} 
+        size="small" 
+        sx={{ 
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          bgcolor: bgColor,
+          color: color,
+          border: '1px solid',
+          borderColor: `${hexColor}40`,
+        }} 
+      />
+    </motion.div>
+  );
+};
 
 const attendanceData = [
   { id: 1, name: 'Dr. Emily Chen', role: 'Senior Resident', date: 'Oct 24, 2023', checkIn: '06:55 AM', checkOut: '07:05 PM', status: 'On Time', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxdNJwmk758EkbaL7gBPr64a8wFu5TljQXU9fIYj6h2Iu-wTiWif_yfRurTm1t6wQxU4WufdQUfarzUlT6Z8zTcAXQzokPzYuzaqHQF03KUFHfkNAcy8UiWmDgASp92rgk5-0F7UIYZAEsNkAe9mLT5FCqCrHzOxdFW7A6eGSsV6lUK-BKZmRMIaClNWIKAEQHIi3Qyd5AwOd8EoU4NA19e3Po9mo1V5GMPC8LlXmv7CKz7qs_fKIPCOSVjFe_GhwUC8glk474DTQ' },
@@ -25,17 +150,47 @@ const weeklyReportData = [
   { date: 'Oct 26, 2023', day: 'Saturday', checkIn: '07:10 AM', checkOut: '03:00 PM', hours: '7h 50m', status: 'Early Leave' },
 ];
 
-const stats = [
-  { label: 'Present Today', value: '128', icon: <CheckCircle2 size={20} />, color: 'success.main' },
-  { label: 'Late Arrival', value: '14', icon: <AlertCircle size={20} />, color: 'warning.main' },
-  { label: 'Absent', value: '6', icon: <XCircle size={20} />, color: 'error.main' },
-  { label: 'On Leave', value: '8', icon: <Calendar size={20} />, color: 'primary.main' },
-];
-
 export default function Attendance() {
+  const { mode } = useThemeMode();
+  const { t } = useLanguage();
   const [clockInOpen, setClockInOpen] = React.useState(false);
   const [shiftType, setShiftType] = React.useState('day');
   const [department, setDepartment] = React.useState('Emergency Room');
+  const [qrScanning, setQrScanning] = React.useState(false);
+  const qrScannerRef = useRef<Html5QrcodeScanner | null>(null);
+
+  useEffect(() => {
+    if (qrScanning && clockInOpen) {
+      qrScannerRef.current = new Html5QrcodeScanner(
+        "qr-reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        /* verbose= */ false
+      );
+      qrScannerRef.current.render(onScanSuccess, onScanFailure);
+    }
+
+    return () => {
+      if (qrScannerRef.current) {
+        qrScannerRef.current.clear().catch(error => console.error("Failed to clear scanner", error));
+      }
+    };
+  }, [qrScanning, clockInOpen]);
+
+  function onScanSuccess(decodedText: string, decodedResult: any) {
+    console.log(`Code matched = ${decodedText}`, decodedResult);
+    
+    if (decodedText.includes('HCPA-CLOCK')) {
+      setQrScanning(false);
+      setClockInOpen(false);
+      alert('QR Code verified. Clock-in successful!');
+    } else {
+      alert('Invalid QR Code. Please scan the official hospital QR code.');
+    }
+  }
+
+  function onScanFailure(error: any) {
+    // console.warn(`Code scan error = ${error}`);
+  }
   
   // Filter & Search State
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -50,6 +205,13 @@ export default function Attendance() {
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [weeklyReportOpen, setWeeklyReportOpen] = React.useState(false);
+
+  const stats = [
+    { label: t('presentToday'), value: '128', icon: CheckCircle2, color: '#10b981' },
+    { label: t('lateArrival'), value: '14', icon: AlertCircle, color: '#f59e0b' },
+    { label: t('absent'), value: '6', icon: XCircle, color: '#ef4444' },
+    { label: t('onLeave'), value: '8', icon: Calendar, color: '#6366f1' },
+  ];
 
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setFilterAnchorEl(event.currentTarget);
@@ -163,17 +325,23 @@ export default function Attendance() {
   });
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Time & Attendance</Typography>
-          <Typography variant="body1" color="text.secondary">Track staff clock-in/out times and daily attendance logs.</Typography>
+    <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="h1" sx={{ mb: 1, fontSize: { xs: '2rem', md: '2.5rem' }, color: 'text.primary' }}>{t('timeAttendance')}</Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>{t('trackAttendance')}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <MagneticButton variant="outlined" startIcon={<Download size={18} />}>{t('exportReport')}</MagneticButton>
+            <MagneticButton variant="contained" startIcon={<Clock size={18} />} onClick={() => setClockInOpen(true)}>{t('clockIn')}</MagneticButton>
+          </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" startIcon={<Download size={18} />}>Export Report</Button>
-          <Button variant="contained" startIcon={<Clock size={18} />} onClick={() => setClockInOpen(true)}>Clock In</Button>
-        </Box>
-      </Box>
+      </motion.div>
 
       {/* Clock In Modal */}
       <Dialog 
@@ -181,23 +349,62 @@ export default function Attendance() {
         onClose={() => setClockInOpen(false)}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { borderRadius: 4, p: 1 } }}
+        TransitionProps={{
+          onEnter: (node) => {
+            node.style.opacity = '0';
+            node.style.transform = 'translateY(40px) scale(0.95)';
+          },
+          onEntering: (node) => {
+            node.style.transition = 'all 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+            node.style.opacity = '1';
+            node.style.transform = 'translateY(0) scale(1)';
+          },
+          onExit: (node) => {
+            node.style.transition = 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+            node.style.opacity = '0';
+            node.style.transform = 'translateY(40px) scale(0.95)';
+          }
+        }}
       >
         <Box sx={{ position: 'absolute', right: 16, top: 16 }}>
-          <IconButton onClick={() => setClockInOpen(false)} size="small"><X size={20} /></IconButton>
+          <IconButton onClick={() => setClockInOpen(false)} size="small" sx={{ color: 'text.secondary' }}><X size={20} /></IconButton>
         </Box>
         <DialogContent sx={{ textAlign: 'center', pt: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Box sx={{ p: 1.5, bgcolor: 'primary.light', color: 'primary.main', borderRadius: '50%' }}>
+            <Box sx={{ p: 1.5, bgcolor: mode === 'light' ? 'rgba(15, 23, 42, 0.05)' : 'rgba(255, 255, 255, 0.05)', color: 'text.primary', borderRadius: '50%' }}>
               <Clock size={24} />
             </Box>
           </Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Start Daily Shift</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>Please record your arrival time and select your assignment.</Typography>
+          <Typography variant="h5" sx={{ mb: 1, color: 'text.primary', fontWeight: 700 }}>{t('startDailyShift')}</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>{t('recordArrivalTime')}</Typography>
 
           <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid size={12}>
+              <Box sx={{ 
+                p: 2, 
+                bgcolor: shiftType === 'day' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(99, 102, 241, 0.1)', 
+                borderRadius: 4,
+                border: '1px solid',
+                borderColor: shiftType === 'day' ? 'warning.main' : 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+                mb: 2
+              }}>
+                {shiftType === 'day' ? <Sun size={32} color="#f59e0b" /> : <Moon size={32} color="#6366f1" />}
+                <Box sx={{ textAlign: 'left' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: shiftType === 'day' ? 'warning.dark' : 'primary.dark', lineHeight: 1.2 }}>
+                    {shiftType === 'day' ? t('dayShift') : t('nightShift')}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                    {shiftType === 'day' ? '08:00 AM - 08:00 PM' : '08:00 PM - 08:00 AM'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
             <Grid size={6}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 1, textAlign: 'left', textTransform: 'uppercase' }}>Department</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1, textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('department')}</Typography>
               <FormControl fullWidth size="small">
                 <Select
                   value={department}
@@ -212,7 +419,7 @@ export default function Attendance() {
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 1, textAlign: 'left', textTransform: 'uppercase' }}>Shift Type</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1, textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('shiftType')}</Typography>
               <ToggleButtonGroup
                 value={shiftType}
                 exclusive
@@ -222,77 +429,142 @@ export default function Attendance() {
                 sx={{ height: 40 }}
               >
                 <ToggleButton value="day" sx={{ borderRadius: '8px 0 0 8px', textTransform: 'none', gap: 1 }}>
-                  <Sun size={14} /> Day
+                  <Sun size={14} /> {t('day')}
                 </ToggleButton>
                 <ToggleButton value="night" sx={{ borderRadius: '0 8px 8px 0', textTransform: 'none', gap: 1 }}>
-                  <Moon size={14} /> Night
+                  <Moon size={14} /> {t('night')}
                 </ToggleButton>
               </ToggleButtonGroup>
             </Grid>
           </Grid>
 
-          <Box sx={{ position: 'relative', mb: 4, display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ 
-              width: 140, height: 140, borderRadius: '50%', 
-              bgcolor: 'primary.main', color: 'white',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', boxShadow: '0 8px 16px rgba(43, 124, 238, 0.3)',
-              '&:hover': { bgcolor: 'primary.dark' }
-            }}>
-              <Box sx={{ mb: 1 }}><Upload size={24} /></Box>
-              <Typography variant="button" sx={{ fontWeight: 800, letterSpacing: 1 }}>CLOCK IN</Typography>
+          {qrScanning ? (
+            <Box sx={{ mb: 4 }}>
+              <Box id="qr-reader" sx={{ width: '100%', borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }} />
+              <Button 
+                onClick={() => setQrScanning(false)} 
+                sx={{ mt: 2, textTransform: 'none', fontWeight: 600 }}
+                color="error"
+              >
+                Cancel Scanning
+              </Button>
             </Box>
-            <Box sx={{ 
-              position: 'absolute', bottom: -10, 
-              bgcolor: 'white', border: '1px solid #e2e8f0', 
-              px: 2, py: 0.5, borderRadius: 4,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-            }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>08:00 AM</Typography>
-            </Box>
-          </Box>
+          ) : (
+            <Box sx={{ position: 'relative', mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Box 
+                  onClick={() => setClockInOpen(false)}
+                  sx={{ 
+                    width: 140, height: 140, borderRadius: '50%', 
+                    background: mode === 'light' ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                    color: mode === 'light' ? 'white' : '#0f172a',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', boxShadow: mode === 'light' ? '0 12px 24px rgba(15, 23, 42, 0.2)' : '0 12px 24px rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Box sx={{ mb: 1 }}><Upload size={24} /></Box>
+                  <Typography variant="button" sx={{ fontWeight: 700, letterSpacing: 1 }}>{t('clockInUpper')}</Typography>
+                </Box>
+              </motion.div>
+              
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>OR</Typography>
+              
+              <Button 
+                variant="outlined" 
+                startIcon={<QrCode size={20} />}
+                onClick={() => setQrScanning(true)}
+                sx={{ borderRadius: 3, px: 4, py: 1, textTransform: 'none', fontWeight: 700 }}
+              >
+                Scan QR Code
+              </Button>
 
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 4 }}>Automatic timestamp will be recorded</Typography>
+              <Box sx={{ 
+                position: 'absolute', bottom: 100, 
+                bgcolor: mode === 'light' ? 'white' : '#1e293b', 
+                border: '1px solid', borderColor: 'divider', 
+                px: 2, py: 0.5, borderRadius: 4,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>08:00 AM</Typography>
+              </Box>
+            </Box>
+          )}
+
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 4 }}>{t('autoTimestamp')}</Typography>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
               <MapPin size={14} />
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>Main Hospital Campus</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 500 }}>{t('mainCampus')}</Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button onClick={() => setClockInOpen(false)} sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
-              <Button variant="contained" onClick={() => setClockInOpen(false)} sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontWeight: 700 }}>Confirm Clock In</Button>
+              <Button onClick={() => setClockInOpen(false)} sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 500 }}>{t('cancel')}</Button>
+              <Button variant="contained" onClick={() => setClockInOpen(false)} sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontWeight: 600 }}>{t('confirmClockIn')}</Button>
             </Box>
           </Box>
         </DialogContent>
       </Dialog>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {stats.map((stat) => (
-          <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.label}>
-            <Card sx={{ bgcolor: 'white' }}>
-              <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ p: 1.5, bgcolor: `${stat.color.split('.')[0]}.light`, color: stat.color, borderRadius: 2, display: 'flex' }}>
-                  {stat.icon}
-                </Box>
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>{stat.value}</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{stat.label}</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <Grid container spacing={3}>
+          {stats.map((stat, index) => (
+            <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.label}>
+              <motion.div variants={itemVariants} style={{ height: '100%' }}>
+                <Card sx={{ 
+                  height: '100%', 
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)', 
+                  '&:hover': { 
+                    transform: 'translateY(-4px)',
+                    boxShadow: mode === 'light' 
+                      ? '0 20px 40px rgba(0,0,0,0.08)' 
+                      : '0 20px 40px rgba(0,0,0,0.4)',
+                    borderColor: `${stat.color}40`
+                  } 
+                }}>
+                  <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ 
+                      p: 1.5, 
+                      bgcolor: mode === 'light' ? `${stat.color}15` : `${stat.color}25`, 
+                      borderRadius: 3, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      border: `1px solid ${stat.color}30`
+                    }}>
+                      <AnimatedIcon icon={stat.icon} color={stat.color} delay={index * 0.2} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h2" sx={{ color: 'text.primary', fontSize: '2rem' }}>{stat.value}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>{stat.label}</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </motion.div>
 
-      <Card>
-        <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center' }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
           <TextField 
             size="small" 
-            placeholder="Search employee..." 
+            placeholder={t('searchEmployee')} 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ width: 300 }}
+            sx={{ width: { xs: '100%', sm: 300 } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -306,262 +578,125 @@ export default function Attendance() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            sx={{ width: 160 }}
+            sx={{ width: { xs: '100%', sm: 160 } }}
             InputLabelProps={{ shrink: true }}
           />
           <Button 
             variant={statusFilter === 'All' ? "outlined" : "contained"} 
             startIcon={<Filter size={18} />} 
-            size="small"
             onClick={handleFilterClick}
+            sx={{ height: 40 }}
           >
-            {statusFilter === 'All' ? 'Filters' : statusFilter}
+            {statusFilter === 'All' ? t('filters') : statusFilter === 'On Time' ? t('onTime') : statusFilter === 'Late' ? t('late') : t('absent')}
           </Button>
           <Menu
             anchorEl={filterAnchorEl}
             open={Boolean(filterAnchorEl)}
             onClose={handleFilterClose}
+            PaperProps={{
+              sx: {
+                mt: 1,
+                boxShadow: mode === 'light' ? '0 24px 48px rgba(0,0,0,0.1)' : '0 24px 48px rgba(0,0,0,0.4)',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 3,
+                backdropFilter: 'blur(24px)',
+                background: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 23, 42, 0.8)',
+              }
+            }}
           >
-            <MenuItem onClick={() => handleStatusSelect('All')}>All Statuses</MenuItem>
-            <MenuItem onClick={() => handleStatusSelect('On Time')}>On Time</MenuItem>
-            <MenuItem onClick={() => handleStatusSelect('Late')}>Late</MenuItem>
-            <MenuItem onClick={() => handleStatusSelect('Absent')}>Absent</MenuItem>
+            <MenuItem onClick={() => handleStatusSelect('All')}>{t('allStatuses')}</MenuItem>
+            <MenuItem onClick={() => handleStatusSelect('On Time')}>{t('onTime')}</MenuItem>
+            <MenuItem onClick={() => handleStatusSelect('Late')}>{t('late')}</MenuItem>
+            <MenuItem onClick={() => handleStatusSelect('Absent')}>{t('absent')}</MenuItem>
           </Menu>
           <Menu
             anchorEl={actionAnchorEl}
             open={Boolean(actionAnchorEl)}
             onClose={handleActionClose}
+            PaperProps={{
+              sx: {
+                mt: 1,
+                boxShadow: mode === 'light' ? '0 24px 48px rgba(0,0,0,0.1)' : '0 24px 48px rgba(0,0,0,0.4)',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 3,
+                backdropFilter: 'blur(24px)',
+                background: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 23, 42, 0.8)',
+              }
+            }}
           >
-            <MenuItem onClick={handleViewOpen}>View Details</MenuItem>
-            <MenuItem onClick={handleWeeklyReportOpen}>View Weekly Report</MenuItem>
-            <MenuItem onClick={handleEditOpen}>Edit Record</MenuItem>
-            <MenuItem onClick={handleDeleteOpen} sx={{ color: 'error.main' }}>Delete</MenuItem>
+            <MenuItem onClick={handleViewOpen}>{t('viewDetails')}</MenuItem>
+            <MenuItem onClick={handleWeeklyReportOpen}>{t('viewWeeklyReport')}</MenuItem>
+            <MenuItem onClick={handleEditOpen}>{t('editRecord')}</MenuItem>
+            <MenuItem onClick={handleDeleteOpen} sx={{ color: 'error.main' }}>{t('delete')}</MenuItem>
           </Menu>
-
-          {/* Weekly Report Dialog */}
-          <Dialog open={weeklyReportOpen} onClose={handleDialogClose} maxWidth="md" fullWidth>
-            <DialogTitle>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Calendar size={24} />
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Weekly Attendance Report</Typography>
-                  <Typography variant="caption" color="text.secondary">Oct 20, 2023 - Oct 26, 2023</Typography>
-                </Box>
-              </Box>
-            </DialogTitle>
-            <DialogContent dividers>
-              {selectedRowId && attendanceData.find(r => r.id === selectedRowId) && (
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                    <Avatar src={attendanceData.find(r => r.id === selectedRowId)?.avatar} sx={{ width: 56, height: 56 }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>{attendanceData.find(r => r.id === selectedRowId)?.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">{attendanceData.find(r => r.id === selectedRowId)?.role}</Typography>
-                    </Box>
-                    <Box sx={{ ml: 'auto', display: 'flex', gap: 3 }}>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Total Hours</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>68h 24m</Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="caption" color="text.secondary" display="block">On Time</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>5 Days</Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Late</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: 'warning.main' }}>1 Day</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  <TableContainer sx={{ border: '1px solid #e2e8f0', borderRadius: 2 }}>
-                    <Table size="small">
-                      <TableHead sx={{ bgcolor: 'grey.50' }}>
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Day</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Check In</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Check Out</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Total Hours</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {weeklyReportData.map((row, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{row.date}</TableCell>
-                            <TableCell>{row.day}</TableCell>
-                            <TableCell>{row.checkIn}</TableCell>
-                            <TableCell>{row.checkOut}</TableCell>
-                            <TableCell>{row.hours}</TableCell>
-                            <TableCell>
-                              <Chip 
-                                label={row.status} 
-                                size="small" 
-                                sx={{ 
-                                  fontSize: 11, fontWeight: 600,
-                                  bgcolor: row.status === 'On Time' ? 'success.light' : row.status === 'Late' ? 'warning.light' : row.status === 'Day Off' ? 'grey.100' : 'error.light',
-                                  color: row.status === 'On Time' ? 'success.main' : row.status === 'Late' ? 'warning.main' : row.status === 'Day Off' ? 'text.secondary' : 'error.main',
-                                }} 
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Box>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleDialogClose}>Close</Button>
-              <Button variant="contained" startIcon={<Download size={16} />} onClick={handleDownloadPDF}>Download PDF</Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* View Dialog */}
-          <Dialog open={viewOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Attendance Details</DialogTitle>
-            <DialogContent dividers>
-              {selectedRowId && attendanceData.find(r => r.id === selectedRowId) && (
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <Avatar src={attendanceData.find(r => r.id === selectedRowId)?.avatar} sx={{ width: 64, height: 64 }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>{attendanceData.find(r => r.id === selectedRowId)?.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">{attendanceData.find(r => r.id === selectedRowId)?.role}</Typography>
-                    </Box>
-                  </Box>
-                  <Grid container spacing={2}>
-                    <Grid size={6}>
-                      <Typography variant="caption" color="text.secondary">Date</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{attendanceData.find(r => r.id === selectedRowId)?.date}</Typography>
-                    </Grid>
-                    <Grid size={6}>
-                      <Typography variant="caption" color="text.secondary">Status</Typography>
-                      <Chip 
-                        label={attendanceData.find(r => r.id === selectedRowId)?.status} 
-                        size="small" 
-                        color={attendanceData.find(r => r.id === selectedRowId)?.status === 'On Time' ? 'success' : attendanceData.find(r => r.id === selectedRowId)?.status === 'Late' ? 'warning' : 'error'}
-                        sx={{ fontWeight: 700, fontSize: 12 }}
-                      />
-                    </Grid>
-                    <Grid size={6}>
-                      <Typography variant="caption" color="text.secondary">Check In</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{attendanceData.find(r => r.id === selectedRowId)?.checkIn}</Typography>
-                    </Grid>
-                    <Grid size={6}>
-                      <Typography variant="caption" color="text.secondary">Check Out</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{attendanceData.find(r => r.id === selectedRowId)?.checkOut}</Typography>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleDialogClose}>Close</Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Edit Dialog */}
-          <Dialog open={editOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Edit Attendance Record</DialogTitle>
-            <DialogContent dividers>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid size={6}>
-                  <TextField fullWidth label="Check In Time" defaultValue="08:00 AM" />
-                </Grid>
-                <Grid size={6}>
-                  <TextField fullWidth label="Check Out Time" defaultValue="05:00 PM" />
-                </Grid>
-                <Grid size={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select label="Status" defaultValue="On Time">
-                      <MenuItem value="On Time">On Time</MenuItem>
-                      <MenuItem value="Late">Late</MenuItem>
-                      <MenuItem value="Absent">Absent</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleDialogClose}>Cancel</Button>
-              <Button variant="contained" onClick={handleDialogClose}>Save Changes</Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Delete Dialog */}
-          <Dialog open={deleteOpen} onClose={handleDialogClose} maxWidth="xs" fullWidth>
-            <DialogTitle>Delete Record?</DialogTitle>
-            <DialogContent>
-              <Typography>Are you sure you want to delete this attendance record? This action cannot be undone.</Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleDialogClose}>Cancel</Button>
-              <Button variant="contained" color="error" onClick={handleDialogClose}>Delete</Button>
-            </DialogActions>
-          </Dialog>
-          <Box sx={{ ml: 'auto' }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>Date: <Box component="span" sx={{ color: 'text.primary' }}>Oct 24, 2023</Box></Typography>
-          </Box>
         </Box>
-        <TableContainer>
-          <Table>
-            <TableHead sx={{ bgcolor: 'grey.50' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>Employee</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>Date</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>Check In</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>Check Out</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>Status</TableCell>
-                <TableCell align="right"></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredData.map((row) => (
-                <TableRow key={row.id} hover>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar src={row.avatar} sx={{ width: 36, height: 36 }} />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{row.role}</Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ fontSize: 14 }}>{row.date}</TableCell>
-                  <TableCell sx={{ fontSize: 14, fontWeight: 500 }}>{row.checkIn}</TableCell>
-                  <TableCell sx={{ fontSize: 14, fontWeight: 500 }}>{row.checkOut}</TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={row.status} 
-                      size="small" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        fontSize: 11,
-                        bgcolor: row.status === 'On Time' ? 'success.light' : row.status === 'Late' ? 'warning.light' : 'error.light',
-                        color: row.status === 'On Time' ? 'success.main' : row.status === 'Late' ? 'warning.main' : 'error.main',
-                      }} 
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={(e) => handleActionClick(e, row.id)}><MoreHorizontal size={18} /></IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredData.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body2" color="text.secondary">No records found</Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Card>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+        >
+          {filteredData.map((row, index) => (
+            <motion.div key={row.id} variants={itemVariants}>
+              <Card sx={{ 
+                p: 2, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
+                transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                cursor: 'pointer',
+                '&:hover': {
+                  transform: 'translateY(-2px) scale(1.01)',
+                  boxShadow: mode === 'light' 
+                    ? '0 12px 24px rgba(0,0,0,0.06)' 
+                    : '0 12px 24px rgba(0,0,0,0.3)',
+                  borderColor: mode === 'light' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.5)',
+                  background: mode === 'light' ? 'rgba(255,255,255,0.8)' : 'rgba(30, 41, 59, 0.6)'
+                }
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: { xs: '100%', sm: 'auto' } }}>
+                  <Avatar src={row.avatar} sx={{ width: 48, height: 48, border: `2px solid ${mode === 'light' ? '#fff' : '#1e293b'}`, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>{row.name}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 1 }}>
+                      <span>{row.role}</span>
+                      <span>•</span>
+                      <span>{row.date}</span>
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, width: { xs: '100%', sm: 'auto' }, justifyContent: 'space-between' }}>
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Typography variant="caption" color="text.secondary" display="block">{t('checkIn')}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.checkIn}</Typography>
+                  </Box>
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Typography variant="caption" color="text.secondary" display="block">{t('checkOut')}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.checkOut}</Typography>
+                  </Box>
+                  <Box sx={{ minWidth: 100, textAlign: 'right' }}>
+                    <PulsingChip label={row.status === 'On Time' ? t('onTime') : row.status === 'Late' ? t('late') : t('absent')} status={row.status} mode={mode} />
+                  </Box>
+                  <IconButton size="small" onClick={(e) => handleActionClick(e, row.id)} sx={{ color: 'text.secondary' }}>
+                    <MoreHorizontal size={20} />
+                  </IconButton>
+                </Box>
+              </Card>
+            </motion.div>
+          ))}
+          {filteredData.length === 0 && (
+            <Box sx={{ py: 8, textAlign: 'center' }}>
+              <Typography variant="body1" color="text.secondary">{t('noRecordsFound')}</Typography>
+            </Box>
+          )}
+        </motion.div>
+      </motion.div>
     </Box>
   );
 }

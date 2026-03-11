@@ -14,11 +14,13 @@ import {
   Globe,
   Umbrella,
   User,
-  Bot
+  Bot,
+  PieChart
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { TranslationKey } from '../i18n/translations';
 import { UserRole } from '../types';
 
@@ -27,6 +29,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
   const location = useLocation();
   const { t, language, setLanguage, isRTL } = useLanguage();
   const { user, login } = useAuth();
+  const { mode } = useThemeMode();
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -54,6 +57,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
         { text: 'Attendance', key: 'attendance', icon: <Clock size={20} />, path: '/attendance', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD] },
         { text: 'Automation', key: 'attendanceAutomation', icon: <Bot size={20} />, path: '/attendance/automation', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER] },
         { text: 'Schedules', key: 'schedules', icon: <CalendarDays size={20} />, path: '/roster', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF] },
+        { text: 'Leave Dashboard', key: 'leaveDashboard', icon: <PieChart size={20} />, path: '/leave-dashboard', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF] },
         { text: 'Leave', key: 'applyLeave', icon: <Umbrella size={20} />, path: '/leave', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.STAFF, UserRole.DEPT_HEAD] },
       ]
     },
@@ -66,7 +70,8 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
     {
       titleKey: 'menuSystem',
       items: [
-        { text: 'Profile', key: 'personalDetails', icon: <User size={20} />, path: '/profile', roles: [UserRole.STAFF, UserRole.DEPT_HEAD] },
+        { text: 'Profile', key: 'personalDetails', icon: <User size={20} />, path: '/profile', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF] },
+        { text: 'Settings', key: 'settings', icon: <Settings size={20} />, path: '/settings', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF] },
         { text: 'Access Control', key: 'accessControl', icon: <ShieldCheck size={20} />, path: '/access-control', roles: [UserRole.SUPER_ADMIN] },
       ]
     }
@@ -75,25 +80,29 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
   return (
     <Box sx={{ 
       width: { xs: 72, sm: 280 }, 
-      borderRight: isRTL ? 'none' : '1px solid #e2e8f0', 
-      borderLeft: isRTL ? '1px solid #e2e8f0' : 'none',
+      borderRight: isRTL ? 'none' : '1px solid', 
+      borderLeft: isRTL ? '1px solid' : 'none',
+      borderColor: 'divider',
       height: '100vh', 
       display: 'flex', 
       flexDirection: 'column', 
-      bgcolor: 'white',
+      background: mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(24, 24, 27, 0.8)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
       transition: 'width 0.3s ease'
     }}>
       <Box sx={{ p: { xs: 2, sm: 3 }, display: 'flex', alignItems: 'center', gap: 2, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
         <Box sx={{ 
-          bgcolor: 'primary.light', 
-          p: 1, 
-          borderRadius: 2, 
+          bgcolor: 'primary.main', 
+          p: 1.2, 
+          borderRadius: 3, 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          color: 'primary.main'
+          color: 'white',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}>
-          <PlusCircle size={24} />
+          <PlusCircle size={24} strokeWidth={2.5} />
         </Box>
         <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{t('hospitalName')}</Typography>
@@ -137,12 +146,12 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
                       justifyContent: { xs: 'center', sm: 'flex-start' },
                       px: { xs: 1, sm: 2 },
                       '&.Mui-selected': {
-                        bgcolor: 'primary.light',
-                        color: 'primary.main',
-                        '& .MuiListItemIcon-root': { color: 'primary.main' },
-                        '&:hover': { bgcolor: 'primary.light' }
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        '& .MuiListItemIcon-root': { color: 'white' },
+                        '&:hover': { bgcolor: 'primary.dark' }
                       },
-                      '&:hover': { bgcolor: 'grey.50' }
+                      '&:hover': { bgcolor: mode === 'light' ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }
                     }}
                   >
                     <ListItemIcon sx={{ minWidth: { xs: 'auto', sm: 40 }, color: 'text.secondary' }}>
@@ -161,7 +170,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
         })}
       </List>
 
-      <Box sx={{ p: { xs: 1, sm: 2 }, borderTop: '1px solid #f1f5f9' }}>
+      <Box sx={{ p: { xs: 1, sm: 2 }, borderTop: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ mb: 2, display: { xs: 'none', sm: 'flex' }, gap: 1, flexWrap: 'wrap' }}>
           {Object.values(UserRole).map((role) => (
             <Chip 
@@ -177,9 +186,16 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
 
         <ListItemButton 
           onClick={() => setLanguage(language === 'en' ? 'ku' : 'en')}
-          sx={{ borderRadius: 2, mb: 1, bgcolor: 'grey.50', justifyContent: { xs: 'center', sm: 'flex-start' }, px: { xs: 1, sm: 2 } }}
+          sx={{ 
+            borderRadius: 2, 
+            mb: 1, 
+            bgcolor: 'action.hover', 
+            justifyContent: { xs: 'center', sm: 'flex-start' }, 
+            px: { xs: 1, sm: 2 },
+            '&:hover': { bgcolor: 'action.selected' }
+          }}
         >
-          <ListItemIcon sx={{ minWidth: { xs: 'auto', sm: 40 } }}>
+          <ListItemIcon sx={{ minWidth: { xs: 'auto', sm: 40 }, color: 'text.secondary' }}>
             <Globe size={20} />
           </ListItemIcon>
           <ListItemText 
@@ -192,12 +208,13 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
         <Box sx={{ 
           p: { xs: 1, sm: 1.5 }, 
           borderRadius: 3, 
-          bgcolor: 'grey.50', 
+          bgcolor: 'action.hover', 
           display: 'flex', 
           alignItems: 'center', 
           gap: 1.5,
           justifyContent: { xs: 'center', sm: 'flex-start' },
-          border: '1px solid #f1f5f9'
+          border: '1px solid',
+          borderColor: 'divider'
         }}>
           <Avatar 
             src={user?.avatar}

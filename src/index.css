@@ -1,27 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --color-primary: #2b7cee;
-  --color-background-light: #F9FAFB;
-  --color-background-dark: #101822;
+  --font-sans: "Inter", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-background-light text-slate-900 antialiased transition-colors duration-200;
+    @apply text-slate-900 antialiased transition-colors duration-200 bg-slate-50;
   }
   
+  /* Kurdish specific styling for better readability and bold look */
+  [lang="ku"] {
+    font-family: "Vazirmatn", sans-serif;
+    line-height: 1.7;
+    letter-spacing: 0;
+  }
+
+  [lang="ku"] h1, 
+  [lang="ku"] h2, 
+  [lang="ku"] h3, 
+  [lang="ku"] h4, 
+  [lang="ku"] h5, 
+  [lang="ku"] h6,
+  [lang="ku"] .font-bold {
+    font-weight: 800; /* Extra bold for headings */
+  }
+
+  [lang="ku"] body,
+  [lang="ku"] p,
+  [lang="ku"] span,
+  [lang="ku"] div {
+    font-weight: 500; /* Medium weight for better readability on screen */
+  }
+
   .dark body {
-    @apply bg-[#0f172a] text-slate-100;
+    @apply text-slate-100 bg-black;
   }
 }
 
 .glass-header {
-  @apply bg-white/85 backdrop-blur-xl border-b border-slate-200/60;
+  @apply bg-white/60 backdrop-blur-2xl border-b border-white/20;
 }
 
 .dark .glass-header {
-  @apply bg-slate-900/85 border-b border-white/5;
+  @apply bg-black/60 backdrop-blur-2xl border-b border-white/5;
 }

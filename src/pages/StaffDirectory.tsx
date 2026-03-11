@@ -4,6 +4,7 @@ import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { Search, Plus, Filter, LayoutGrid, List as ListIcon, Heart, Stethoscope, Brain, Baby, MoreVertical, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const staffRows = [
   { id: 1, name: 'Dr. Sarah Jenkins', role: 'Doctor', dept: 'Cardiology', exp: '12 Yrs', status: 'Active', avatar: 'https://picsum.photos/seed/sarah/100/100' },
@@ -16,12 +17,13 @@ const staffRows = [
 
 export default function StaffDirectory() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const columns: GridColDef[] = [
     { 
       field: 'name', 
-      headerName: 'Name', 
+      headerName: t('name'), 
       flex: 1,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -30,16 +32,16 @@ export default function StaffDirectory() {
         </Box>
       )
     },
-    { field: 'role', headerName: 'Role', flex: 1 },
-    { field: 'dept', headerName: 'Department', flex: 1 },
-    { field: 'exp', headerName: 'Experience', width: 120 },
+    { field: 'role', headerName: t('role'), flex: 1 },
+    { field: 'dept', headerName: t('department'), flex: 1 },
+    { field: 'exp', headerName: t('experience'), width: 120 },
     { 
       field: 'status', 
-      headerName: 'Status', 
+      headerName: t('statusCol'), 
       width: 120,
       renderCell: (params) => (
         <Chip 
-          label={params.value} 
+          label={params.value === 'Active' ? t('active') : params.value === 'On Leave' ? t('onLeave') : params.value === 'Suspended' ? t('suspended') : t('partTime')} 
           size="small" 
           sx={{ 
             fontWeight: 700, 
@@ -52,7 +54,7 @@ export default function StaffDirectory() {
     },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t('actionsCol'),
       width: 100,
       sortable: false,
       renderCell: (params) => (
@@ -62,7 +64,7 @@ export default function StaffDirectory() {
           sx={{ fontWeight: 700 }}
           onClick={() => navigate('/profile', { state: { staffMember: params.row } })}
         >
-          View
+          {t('view')}
         </Button>
       )
     }
@@ -72,8 +74,8 @@ export default function StaffDirectory() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-end' }, gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '1.75rem', md: '2.125rem' } }}>Staff Directory</Typography>
-          <Typography variant="body1" color="text.secondary">Manage access and information for HCPA employees.</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '1.75rem', md: '2.125rem' } }}>{t('staffDirectory')}</Typography>
+          <Typography variant="body1" color="text.secondary">{t('manageStaffAccess')}</Typography>
         </Box>
         <Button 
           variant="contained" 
@@ -81,7 +83,7 @@ export default function StaffDirectory() {
           sx={{ px: 3, py: 1.2, width: { xs: '100%', sm: 'auto' } }}
           onClick={() => navigate('/staff/add')}
         >
-          Add New Employee
+          {t('addNewEmployee')}
         </Button>
       </Box>
 
@@ -137,7 +139,7 @@ export default function StaffDirectory() {
                 }}>
                   <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
                     <Chip 
-                      label={person.status} 
+                      label={person.status === 'Active' ? t('active') : person.status === 'On Leave' ? t('onLeave') : person.status === 'Suspended' ? t('suspended') : t('partTime')} 
                       size="small" 
                       sx={{ 
                         fontWeight: 700, 
@@ -151,7 +153,7 @@ export default function StaffDirectory() {
                   <CardContent sx={{ p: 4 }}>
                     <Avatar 
                       src={person.avatar} 
-                      sx={{ width: 96, height: 96, mx: 'auto', mb: 2, border: '4px solid #f8fafc' }} 
+                      sx={{ width: 96, height: 96, mx: 'auto', mb: 2, border: '4px solid', borderColor: 'background.paper' }} 
                     />
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>{person.name}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>{person.role}</Typography>
@@ -174,7 +176,7 @@ export default function StaffDirectory() {
                       sx={{ fontWeight: 700 }}
                       onClick={() => navigate('/profile', { state: { staffMember: person } })}
                     >
-                      View Profile
+                      {t('viewProfile')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -187,7 +189,7 @@ export default function StaffDirectory() {
       {viewMode === 'grid' && (
         <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            Showing <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>1</Box> to <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>6</Box> of <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>248</Box> results
+            {t('showing')} <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>1</Box> {t('to')} <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>6</Box> {t('of')} <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>248</Box> {t('results')}
           </Typography>
           <Pagination count={42} color="primary" shape="rounded" />
         </Box>

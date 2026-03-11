@@ -28,15 +28,14 @@ export default function StaffDashboard() {
     <Box sx={{ 
       p: { xs: 2, md: 4 }, 
       pb: { xs: 12, md: 4 },
-      bgcolor: '#f8fafc',
       minHeight: '100%'
     }}>
       {/* App Header Section - Native App Style */}
       <Box sx={{ mb: 3, display: { xs: 'block', md: 'none' } }}>
-        <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.04em', color: '#1e293b' }}>
+        <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.04em', color: 'text.primary' }}>
           {t('welcome')}, Sarah
         </Typography>
-        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
           Wednesday, Feb 25
         </Typography>
       </Box>
@@ -47,20 +46,21 @@ export default function StaffDashboard() {
           <Grid size={{ xs: 12 }}>
             <motion.div variants={itemVariants}>
               <Card sx={{ 
-                bgcolor: '#fff7ed', 
-                border: '1px solid #ffedd5', 
+                bgcolor: 'warning.light', 
+                border: '1px solid',
+                borderColor: 'warning.main',
                 borderRadius: 4,
                 boxShadow: 'none'
               }}>
                 <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ p: 1, bgcolor: '#ffedd5', borderRadius: 2, color: '#f59e0b' }}>
+                  <Box sx={{ p: 1, bgcolor: 'warning.main', borderRadius: 2, color: 'white' }}>
                     <AlertTriangle size={20} />
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#9a3412' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'warning.dark' }}>
                       License Expiring Soon
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#c2410c', fontWeight: 500 }}>
+                    <Typography variant="caption" sx={{ color: 'warning.dark', fontWeight: 500 }}>
                       Your Board Certification expires in 28 days. Please update it.
                     </Typography>
                   </Box>
@@ -168,7 +168,7 @@ export default function StaffDashboard() {
                     flexShrink: 0, 
                     width: 100, 
                     p: 2, 
-                    bgcolor: 'white', 
+                    bgcolor: 'background.paper', 
                     borderRadius: 5, 
                     textAlign: 'center',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
@@ -183,7 +183,7 @@ export default function StaffDashboard() {
                   }}>
                     {action.icon}
                   </Box>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', display: 'block', lineHeight: 1.2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', lineHeight: 1.2 }}>
                     {action.label}
                   </Typography>
                 </Box>
@@ -194,7 +194,7 @@ export default function StaffDashboard() {
           {/* Leave Balances - Native App Style */}
           <Grid size={{ xs: 12, md: 6 }}>
             <motion.div variants={itemVariants}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#475569', mb: 2, px: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', mb: 2, px: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
                 {t('leaveBalances')}
               </Typography>
               <Grid container spacing={2}>
@@ -203,14 +203,14 @@ export default function StaffDashboard() {
                   { label: t('sickLeave'), value: 5, total: 10, color: '#ef4444' }
                 ].map((leave) => (
                   <Grid size={{ xs: 6 }} key={leave.label}>
-                    <Card sx={{ borderRadius: 5, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                    <Card sx={{ borderRadius: 5, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', bgcolor: 'background.paper' }}>
                       <CardContent sx={{ p: 2.5 }}>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 1 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 1 }}>
                           {leave.label}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 1.5 }}>
                           <Typography variant="h5" sx={{ fontWeight: 900, color: leave.color }}>{leave.value}</Typography>
-                          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>/ {leave.total} days</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>/ {leave.total} days</Typography>
                         </Box>
                         <LinearProgress 
                           variant="determinate" 
@@ -232,10 +232,10 @@ export default function StaffDashboard() {
           <Grid size={{ xs: 12 }}>
             <motion.div variants={itemVariants}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, px: 0.5 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>
                   {t('announcements')}
                 </Typography>
-                <Button size="small" sx={{ fontWeight: 700, color: '#2b7cee' }}>{t('viewAll')}</Button>
+                <Button size="small" sx={{ fontWeight: 700, color: 'primary.main' }}>{t('viewAll')}</Button>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {[
@@ -243,23 +243,24 @@ export default function StaffDashboard() {
                   { title: 'Staff Cafeteria Update', date: '5h ago', type: 'Info' }
                 ].map((item, i) => (
                   <Box key={i} sx={{ 
-                    p: 2, bgcolor: 'white', borderRadius: 5, 
+                    p: 2, bgcolor: 'background.paper', borderRadius: 5, 
                     display: 'flex', alignItems: 'center', gap: 2,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
                     cursor: 'pointer'
                   }}>
                     <Box sx={{ 
                       width: 40, height: 40, borderRadius: 2.5, 
-                      bgcolor: item.type === 'Urgent' ? '#fee2e2' : '#e0f2fe',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      bgcolor: item.type === 'Urgent' ? 'error.light' : 'info.light',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      opacity: 0.8
                     }}>
                       <AlertTriangle size={20} color={item.type === 'Urgent' ? '#ef4444' : '#2b7cee'} />
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#1e293b' }}>{item.title}</Typography>
-                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>{item.date}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>{item.title}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>{item.date}</Typography>
                     </Box>
-                    <ChevronRight size={18} color="#cbd5e1" />
+                    <ChevronRight size={18} color="text.secondary" />
                   </Box>
                 ))}
               </Box>

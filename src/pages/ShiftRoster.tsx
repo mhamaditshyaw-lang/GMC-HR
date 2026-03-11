@@ -23,7 +23,7 @@ export default function ShiftRoster() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, md: 4 }, width: { xs: '100%', sm: 'auto' }, justifyContent: 'space-between' }}>
           <Typography variant="h4" sx={{ fontWeight: 700, fontSize: { xs: '1.5rem', md: '2.125rem' } }}>October 2023</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: 'white', borderRadius: 2, p: 0.5, border: '1px solid #e2e8f0' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: 'background.paper', borderRadius: 2, p: 0.5, border: '1px solid #e2e8f0' }}>
               <IconButton size="small"><ChevronLeft size={18} /></IconButton>
               <IconButton size="small"><ChevronRight size={18} /></IconButton>
             </Box>
@@ -34,7 +34,7 @@ export default function ShiftRoster() {
           <Box sx={{ display: 'flex', bgcolor: 'grey.100', p: 0.5, borderRadius: 2, flex: { xs: 1, sm: 'none' } }}>
             <Button fullWidth size="small" sx={{ color: 'text.secondary' }}>Day</Button>
             <Button fullWidth size="small" sx={{ color: 'text.secondary' }}>Week</Button>
-            <Button fullWidth size="small" variant="contained" sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'white' } }}>Month</Button>
+            <Button fullWidth size="small" variant="contained" sx={{ bgcolor: 'background.paper', color: 'text.primary', '&:hover': { bgcolor: 'background.paper' } }}>Month</Button>
           </Box>
           <Button variant="contained" startIcon={<Plus size={18} />} sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Schedule Shift</Button>
         </Box>
@@ -73,13 +73,14 @@ export default function ShiftRoster() {
                         <Typography variant="caption" sx={{ 
                           fontWeight: 700, 
                           color: isToday ? 'primary.main' : 'text.secondary',
-                          bgcolor: isToday ? 'white' : 'transparent',
+                          background: isToday ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.05)',
+                          backdropFilter: isToday ? 'blur(10px)' : 'none',
                           width: 24, height: 24, borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}>
                           {date}
                         </Typography>
-                        {isToday && <Chip label="Today" size="small" sx={{ height: 16, fontSize: 8, fontWeight: 800, bgcolor: 'white', color: 'primary.main', border: '1px solid #e2e8f0' }} />}
+                        {isToday && <Chip label="Today" size="small" sx={{ height: 16, fontSize: 8, fontWeight: 800, bgcolor: 'background.paper', color: 'primary.main', border: '1px solid #e2e8f0' }} />}
                       </Box>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         {dayShifts.map((shift, idx) => (
@@ -119,7 +120,7 @@ export default function ShiftRoster() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {shifts.map((shift, idx) => (
               <Box key={idx} sx={{ 
-                p: 2, borderRadius: 3, bgcolor: 'white', border: '1px solid #f1f5f9',
+                p: 2, borderRadius: 3, bgcolor: 'background.paper', border: '1px solid #f1f5f9',
                 display: 'flex', alignItems: 'center', gap: 2,
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
               }}>

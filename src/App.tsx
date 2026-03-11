@@ -30,6 +30,8 @@ import PayrollAdjustments from './pages/PayrollAdjustments';
 import Settings from './pages/Settings';
 import AccessControl from './pages/AccessControl';
 import LeaveManagement from './pages/staff/LeaveManagement';
+import LeaveDashboard from './pages/LeaveDashboard';
+import LeaveAnalytics from './pages/LeaveAnalytics';
 import StaffProfile from './pages/staff/StaffProfile';
 import Compliance from './pages/Compliance';
 import { useAuth } from './contexts/AuthContext';
@@ -92,7 +94,7 @@ export default function App() {
                   } />
   
                   <Route path="settings" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
                       <Settings />
                     </ProtectedRoute>
                   } />
@@ -119,6 +121,16 @@ export default function App() {
                   <Route path="leave" element={
                     <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
                       <LeaveManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="leave-dashboard" element={
+                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
+                      <LeaveDashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="leave-analytics" element={
+                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD]}>
+                      <LeaveAnalytics />
                     </ProtectedRoute>
                   } />
                   <Route path="profile" element={<StaffProfile />} />

@@ -171,7 +171,7 @@ export default function Compliance() {
 
       {/* Stats Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard 
             title="Overall Compliance" 
             value={`${complianceRate}%`} 
@@ -180,7 +180,7 @@ export default function Compliance() {
             subtitle={`${compliantCount} of ${totalLicenses} licenses active`}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard 
             title="Expiring Soon" 
             value={expiringSoon} 
@@ -189,7 +189,7 @@ export default function Compliance() {
             subtitle="Within next 30 days"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard 
             title="Expired" 
             value={expired} 
@@ -198,7 +198,7 @@ export default function Compliance() {
             subtitle="Action required immediately"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard 
             title="Total Licenses" 
             value={totalLicenses} 
@@ -212,7 +212,7 @@ export default function Compliance() {
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
               placeholder="Search staff or license number..."
@@ -228,7 +228,7 @@ export default function Compliance() {
               size="small"
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Department</InputLabel>
               <Select
@@ -245,7 +245,7 @@ export default function Compliance() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Status</InputLabel>
               <Select
@@ -260,7 +260,7 @@ export default function Compliance() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Grid size={{ xs: 12, md: 2 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="outlined" startIcon={<Filter size={18} />}>
               More Filters
             </Button>

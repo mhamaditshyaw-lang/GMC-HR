@@ -33,6 +33,7 @@ import {
   X
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { calculateDistance, HOSPITAL_COORDS, ALLOWED_IPS } from '../../utils/geo';
 
@@ -46,6 +47,45 @@ export default function StaffAttendance() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [confirmClockOutOpen, setConfirmClockOutOpen] = useState(false);
+  const [qrScanning, setQrScanning] = useState(false);
+  const qrScannerRef = useRef<Html5QrcodeScanner | null>(null);
+
+  useEffect(() => {
+    if (qrScanning) {
+      qrScannerRef.current = new Html5QrcodeScanner(
+        "qr-reader-staff",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        /* verbose= */ false
+      );
+      qrScannerRef.current.render(onScanSuccess, onScanFailure);
+    }
+
+    return () => {
+      if (qrScannerRef.current) {
+        qrScannerRef.current.clear().catch(error => console.error("Failed to clear scanner", error));
+      }
+    };
+  }, [qrScanning]);
+
+  function onScanSuccess(decodedText: string, decodedResult: any) {
+    console.log(`Code matched = ${decodedText}`, decodedResult);
+    
+    // Simple validation: check if QR code contains 'HCPA-CLOCK'
+    if (decodedText.includes('HCPA-CLOCK')) {
+      setQrScanning(false);
+      performClockAction();
+      setToastMessage('QR Code verified. Clocking you in...');
+      setShowToast(true);
+    } else {
+      setToastMessage('Invalid QR Code. Please scan the official hospital QR code.');
+      setShowToast(true);
+    }
+  }
+
+  function onScanFailure(error: any) {
+    // console.warn(`Code scan error = ${error}`);
+  }
 
   // Document Upload State
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -106,9 +146,18 @@ export default function StaffAttendance() {
   };
 
   const handleClockAction = () => {
+    if (isClockedIn) {
+      setConfirmClockOutOpen(true);
+    } else {
+      performClockAction();
+    }
+  };
+
+  const performClockAction = () => {
     setIsClockedIn(!isClockedIn);
     setToastMessage(t('attendanceLogged'));
     setShowToast(true);
+    setConfirmClockOutOpen(false);
   };
 
   const handleOpenUploadDialog = (index: number) => {
@@ -146,7 +195,7 @@ export default function StaffAttendance() {
       <Grid container spacing={3}>
         {/* Status Cards */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4, height: '100%' }}>
+          <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4, height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Verification Status</Typography>
               
@@ -287,6 +336,7 @@ export default function StaffAttendance() {
                 <Button 
                   variant="outlined" 
                   startIcon={<QrCode size={18} />} 
+                  onClick={() => setQrScanning(true)}
                   sx={{ borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}
                 >
                   {t('scanQR')}
@@ -298,14 +348,14 @@ export default function StaffAttendance() {
 
         {/* Recent Logs */}
         <Grid size={{ xs: 12 }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
-            <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
+            <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <History size={20} color="#2b7cee" />
               <Typography variant="h6" sx={{ fontWeight: 700 }}>Recent Attendance Logs</Typography>
             </Box>
             <Box sx={{ p: 0 }}>
               {recentLogs.map((log, idx) => (
-                <Box key={idx} sx={{ p: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < recentLogs.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                <Box key={idx} sx={{ p: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: idx < recentLogs.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>{log.date}</Typography>
                     <Typography variant="caption" color="text.secondary">In: {log.in} • Out: {log.out}</Typography>
@@ -366,7 +416,7 @@ export default function StaffAttendance() {
             sx={{ 
               p: 4, 
               border: '2px dashed', 
-              borderColor: selectedFile ? 'primary.main' : '#e2e8f0',
+              borderColor: selectedFile ? 'primary.main' : 'divider',
               bgcolor: selectedFile ? 'primary.50' : 'grey.50',
               borderRadius: 3, 
               textAlign: 'center',
@@ -420,13 +470,73 @@ export default function StaffAttendance() {
         </DialogActions>
       </Dialog>
 
+      {/* QR Scanner Dialog */}
+      <Dialog
+        open={qrScanning}
+        onClose={() => setQrScanning(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          Scan QR Code
+          <IconButton onClick={() => setQrScanning(false)} size="small">
+            <X size={20} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box id="qr-reader-staff" sx={{ width: '100%', borderRadius: 3, overflow: 'hidden' }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+            Position the hospital QR code within the frame to clock in/out instantly.
+          </Typography>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clock Out Confirmation Dialog */}
+      <Dialog
+        open={confirmClockOutOpen}
+        onClose={() => setConfirmClockOutOpen(false)}
+        PaperProps={{
+          sx: { borderRadius: 4, p: 1 }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+          Confirm Clock Out
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" color="text.secondary">
+            Are you sure you want to clock out? This will end your current shift recording.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 1 }}>
+          <Button 
+            onClick={() => setConfirmClockOutOpen(false)} 
+            variant="outlined" 
+            sx={{ borderRadius: 2, fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={performClockAction} 
+            variant="contained" 
+            color="error"
+            sx={{ borderRadius: 2, fontWeight: 600 }}
+          >
+            Confirm Clock Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar 
         open={showToast} 
-        autoHideDuration={3000} 
+        autoHideDuration={4000} 
         onClose={() => setShowToast(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={() => setShowToast(false)} severity="success" sx={{ width: '100%', borderRadius: 2 }}>
+        <Alert 
+          onClose={() => setShowToast(false)} 
+          severity={toastMessage.includes('Invalid') ? 'error' : 'success'} 
+          sx={{ width: '100%', borderRadius: 3, fontWeight: 600 }}
+        >
           {toastMessage}
         </Alert>
       </Snackbar>

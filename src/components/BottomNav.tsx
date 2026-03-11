@@ -7,11 +7,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../types';
 import { motion } from 'motion/react';
 
+import { useThemeMode } from '../contexts/ThemeContext';
+
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { mode } = useThemeMode();
 
   const isStaff = user?.role === UserRole.STAFF;
 
@@ -20,13 +23,13 @@ export default function BottomNav() {
     { label: t('schedules'), icon: <CalendarDays size={22} />, path: '/roster', id: 1 },
     { label: t('attendance'), icon: <Clock size={22} />, path: '/attendance', id: 2 },
     { label: t('applyLeave'), icon: <Umbrella size={22} />, path: '/leave', id: 3 },
-    { label: t('personalDetails'), icon: <User size={22} />, path: '/profile', id: 4 },
+    { label: t('settings'), icon: <Settings size={22} />, path: '/settings', id: 4 },
   ] : [
     { label: t('dashboard'), icon: <LayoutDashboard size={22} />, path: '/', id: 0 },
-    { label: 'Staff', icon: <Users size={22} />, path: '/staff', id: 1 },
-    { label: 'Roster', icon: <CalendarDays size={22} />, path: '/roster', id: 2 },
-    { label: 'Payroll', icon: <CreditCard size={22} />, path: '/payroll', id: 3 },
-    { label: 'Settings', icon: <Settings size={22} />, path: '/settings', id: 4 },
+    { label: t('employeeList'), icon: <Users size={22} />, path: '/staff', id: 1 },
+    { label: t('schedules'), icon: <CalendarDays size={22} />, path: '/roster', id: 2 },
+    { label: t('payroll'), icon: <CreditCard size={22} />, path: '/payroll', id: 3 },
+    { label: t('settings'), icon: <Settings size={22} />, path: '/settings', id: 4 },
   ];
 
   const activeIndex = navItems.findIndex(item => item.path === location.pathname);
@@ -40,9 +43,10 @@ export default function BottomNav() {
       left: 0,
       right: 0,
       zIndex: 2000,
-      bgcolor: 'rgba(255, 255, 255, 0.94)',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+      background: mode === 'light' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(24, 24, 27, 0.8)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      borderTop: mode === 'light' ? '1px solid rgba(255, 255, 255, 0.8)' : '1px solid rgba(255, 255, 255, 0.05)',
       pb: 'env(safe-area-inset-bottom)',
     }}>
       <Box sx={{ 

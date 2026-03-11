@@ -21,14 +21,28 @@ import {
   Lock, 
   Globe, 
   Camera,
-  Save
+  Save,
+  Palette,
+  Moon,
+  Sun,
+  Check
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 
 export default function Settings() {
   const { t } = useLanguage();
+  const { mode, primaryColor, toggleTheme, setPrimaryColor } = useThemeMode();
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+  const themes = [
+    { id: 'blue', color: '#3b82f6', name: 'Blue' },
+    { id: 'emerald', color: '#10b981', name: 'Emerald' },
+    { id: 'violet', color: '#8b5cf6', name: 'Violet' },
+    { id: 'amber', color: '#f59e0b', name: 'Amber' },
+    { id: 'rose', color: '#f43f5e', name: 'Rose' },
+  ];
 
   const handleSave = () => {
     setSnackbar({ open: true, message: t('saveChanges') + '...' });
@@ -52,7 +66,7 @@ export default function Settings() {
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('settings')}</Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Manage your account preferences and application settings.
+        {t('manageAccountSettings')}
       </Typography>
 
       <motion.div
@@ -91,23 +105,21 @@ export default function Settings() {
 
               <Card>
                 <CardContent sx={{ p: 0 }}>
-                  <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'primary.light', color: 'primary.main' }}>
+                  <Box sx={{ 
+                    p: 2, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2, 
+                    bgcolor: mode === 'light' ? 'primary.main' : 'primary.dark', 
+                    color: 'white',
+                    borderRadius: '12px 12px 0 0'
+                  }}>
                     <User size={20} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{t('accountSettings')}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('accountSettings')}</Typography>
                   </Box>
                   <Divider />
                   <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer', '&:hover': { bgcolor: 'grey.50' } }}>
-                    <Bell size={20} color="#64748b" />
-                    <Typography variant="body2">{t('notificationSettings')}</Typography>
-                  </Box>
-                  <Divider />
-                  <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer', '&:hover': { bgcolor: 'grey.50' } }}>
-                    <Lock size={20} color="#64748b" />
-                    <Typography variant="body2">{t('securitySettings')}</Typography>
-                  </Box>
-                  <Divider />
-                  <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer', '&:hover': { bgcolor: 'grey.50' } }}>
-                    <Globe size={20} color="#64748b" />
+                    <Palette size={20} color="#64748b" />
                     <Typography variant="body2">{t('languageSettings')}</Typography>
                   </Box>
                 </CardContent>
@@ -122,16 +134,16 @@ export default function Settings() {
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>{t('generalSettings')}</Typography>
                   <Grid container spacing={3}>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField fullWidth label="First Name" defaultValue="Alex" />
+                      <TextField fullWidth label={t('firstName')} defaultValue="Alex" />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField fullWidth label="Last Name" defaultValue="Rivera" />
+                      <TextField fullWidth label={t('lastName')} defaultValue="Rivera" />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                      <TextField fullWidth label="Email Address" defaultValue="alex.rivera@medicore.com" />
+                      <TextField fullWidth label={t('emailAddress')} defaultValue="alex.rivera@medicore.com" />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                      <TextField fullWidth label="Phone Number" defaultValue="+1 (555) 000-0000" />
+                      <TextField fullWidth label={t('phoneNumber')} defaultValue="+1 (555) 000-0000" />
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -139,35 +151,59 @@ export default function Settings() {
 
               <Card sx={{ mb: 4 }}>
                 <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>{t('notificationSettings')}</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <FormControlLabel 
-                      control={<Switch defaultChecked />} 
-                      label={t('emailNotifications')} 
-                    />
-                    <FormControlLabel 
-                      control={<Switch defaultChecked />} 
-                      label={t('pushNotifications')} 
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-
-              <Card sx={{ mb: 4 }}>
-                <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>{t('securitySettings')}</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('twoFactorAuth')}</Typography>
-                        <Typography variant="caption" color="text.secondary">Add an extra layer of security to your account.</Typography>
-                      </Box>
-                      <Switch />
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>{t('languageSettings')}</Typography>
+                  
+                  <Box sx={{ mb: 4 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>{t('mode') || 'Theme Mode'}</Typography>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Button
+                        variant={mode === 'light' ? 'contained' : 'outlined'}
+                        onClick={() => mode !== 'light' && toggleTheme()}
+                        startIcon={<Sun size={18} />}
+                        sx={{ flex: 1 }}
+                      >
+                        Light
+                      </Button>
+                      <Button
+                        variant={mode === 'dark' ? 'contained' : 'outlined'}
+                        onClick={() => mode !== 'dark' && toggleTheme()}
+                        startIcon={<Moon size={18} />}
+                        sx={{ flex: 1 }}
+                      >
+                        Dark
+                      </Button>
                     </Box>
-                    <Divider />
-                    <Button variant="outlined" startIcon={<Lock size={18} />}>
-                      {t('changePassword')}
-                    </Button>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>{t('primaryColor') || 'Primary Color'}</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                      {themes.map((theme) => (
+                        <Box
+                          key={theme.id}
+                          onClick={() => setPrimaryColor(theme.id as any)}
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: '50%',
+                            bgcolor: theme.color,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '4px solid',
+                            borderColor: primaryColor === theme.id ? 'primary.main' : 'transparent',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'scale(1.1)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            }
+                          }}
+                        >
+                          {primaryColor === theme.id && <Check size={24} color="white" />}
+                        </Box>
+                      ))}
+                    </Box>
                   </Box>
                 </CardContent>
               </Card>

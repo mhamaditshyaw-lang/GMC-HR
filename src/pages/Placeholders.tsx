@@ -7,7 +7,7 @@ export function Compliance() {
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Compliance & Licenses</Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>Monitor staff certifications and regulatory requirements.</Typography>
-      <Card sx={{ p: 4, textAlign: 'center', border: '2px dashed #e2e8f0', bgcolor: 'transparent', boxShadow: 'none' }}>
+      <Card sx={{ p: 4, textAlign: 'center', border: '2px dashed', borderColor: 'divider', background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)', boxShadow: 'none' }}>
         <ShieldCheck size={48} color="#94a3b8" style={{ margin: '0 auto 16px' }} />
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Compliance Module</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>This module is currently being updated to meet new healthcare standards.</Typography>

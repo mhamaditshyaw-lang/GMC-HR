@@ -4,10 +4,13 @@ import { Camera, ChevronRight, ChevronLeft, Save, User, Briefcase, ShieldCheck, 
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox, FormControlLabel } from '@mui/material';
-
-const steps = ['Personal Info', 'Job Details', 'Documents', 'Review'];
+import { useLanguage } from '../contexts/LanguageContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 
 export default function AddEmployee() {
+  const { t } = useLanguage();
+  const { mode } = useThemeMode();
+  const steps = [t('personalInfo'), t('jobDetails'), t('documents'), t('review')];
   const [activeStep, setActiveStep] = useState(0);
   const [declaration, setDeclaration] = useState(false);
   const [formData, setFormData] = useState({
@@ -70,16 +73,17 @@ export default function AddEmployee() {
     if (file) {
       return (
         <Grid size={{ xs: 12, md: 6 }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>{label}</Typography>
+          <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary' }}>{label}</Typography>
           <Box sx={{ 
-            p: 2, border: '2px solid #2b7cee', borderRadius: 2, bgcolor: 'white',
-            display: 'flex', alignItems: 'center', gap: 2
+            p: 2, border: '2px solid', borderColor: 'primary.main', borderRadius: 2, bgcolor: mode === 'light' ? 'primary.light' : 'rgba(43, 124, 238, 0.1)',
+            display: 'flex', alignItems: 'center', gap: 2,
+            transition: 'all 0.2s ease'
           }}>
-            <Box sx={{ p: 1, bgcolor: 'primary.light', borderRadius: 1, color: 'primary.main' }}>
+            <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 1, color: 'white' }}>
               <FileText size={24} />
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>{file.name}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>{file.name}</Typography>
               <Typography variant="caption" color="text.secondary">{file.size} • Uploaded</Typography>
             </Box>
             <CheckCircle2 size={20} color="#22c55e" />
@@ -87,7 +91,7 @@ export default function AddEmployee() {
               <IconButton size="small" sx={{ color: 'primary.main' }} onClick={() => setViewingFile(file.name)} title="View Details">
                 <Eye size={18} />
               </IconButton>
-              <IconButton size="small" sx={{ color: 'text.secondary' }} onClick={() => removeFile(id)} title="Remove">
+              <IconButton size="small" sx={{ color: 'error.main' }} onClick={() => removeFile(id)} title="Remove">
                 <Trash2 size={18} />
               </IconButton>
             </Box>
@@ -98,7 +102,7 @@ export default function AddEmployee() {
 
     return (
       <Grid size={{ xs: 12, md: 6 }}>
-        <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>{label}</Typography>
+        <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary' }}>{label}</Typography>
         <input
           type="file"
           id={inputId}
@@ -107,18 +111,61 @@ export default function AddEmployee() {
         />
         <label htmlFor={inputId}>
           <Box sx={{ 
-            p: 3, border: '2px dashed #e2e8f0', borderRadius: 2, bgcolor: 'grey.50',
+            p: 3, border: '2px dashed', borderColor: 'divider', borderRadius: 2, bgcolor: mode === 'light' ? 'grey.50' : 'rgba(255, 255, 255, 0.02)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-            cursor: 'pointer', '&:hover': { bgcolor: 'grey.100', borderColor: 'primary.main' }
+            cursor: 'pointer', transition: 'all 0.2s ease',
+            '&:hover': { bgcolor: mode === 'light' ? 'grey.100' : 'rgba(255, 255, 255, 0.05)', borderColor: 'primary.main' }
           }}>
             <Icon size={24} color="#94a3b8" />
-            <Typography variant="body2"><Box component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>Click to upload</Box> or drag and drop</Typography>
+            <Typography variant="body2"><Box component="span" sx={{ color: 'primary.main', fontWeight: 700 }}>Click to upload</Box> or drag and drop</Typography>
             <Typography variant="caption" color="text.secondary">{description}</Typography>
           </Box>
         </label>
       </Grid>
     );
   };
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleComplete = () => {
+    setIsSubmitted(true);
+    setTimeout(() => {
+      navigate('/staff');
+    }, 3000);
+  };
+
+  if (isSubmitted) {
+    return (
+      <Box sx={{ 
+        height: '80vh', display: 'flex', flexDirection: 'column', 
+        alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+        p: 4
+      }}>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        >
+          <Box sx={{ 
+            width: 120, height: 120, borderRadius: '50%', 
+            bgcolor: mode === 'light' ? 'success.light' : 'rgba(34, 197, 94, 0.1)', 
+            color: 'success.main',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            mb: 4, boxShadow: '0 20px 40px rgba(34, 197, 94, 0.2)'
+          }}>
+            <CheckCircle2 size={64} />
+          </Box>
+        </motion.div>
+        <Typography variant="h3" sx={{ fontWeight: 800, mb: 2 }}>Onboarding Complete!</Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500, mb: 4 }}>
+          The new employee has been successfully registered in the hospital system. Redirecting to staff directory...
+        </Typography>
+        <Button variant="contained" onClick={() => navigate('/staff')} sx={{ borderRadius: 2, px: 4 }}>
+          Go to Staff Directory
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1000, mx: 'auto' }}>
@@ -154,8 +201,8 @@ export default function AddEmployee() {
       </Dialog>
       <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '1.75rem', md: '2.125rem' } }}>Add New Employee</Typography>
-          <Typography variant="body1" color="text.secondary">Register a new staff member to the hospital system.</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '1.75rem', md: '2.125rem' } }}>{t('addNewEmployee')}</Typography>
+          <Typography variant="body1" color="text.secondary">{t('registerNewStaff')}</Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 3 }, width: { xs: '100%', sm: 'auto' } }}>
           <Box sx={{ 
@@ -164,9 +211,9 @@ export default function AddEmployee() {
             width: 300
           }}>
             <Search size={18} color="#94a3b8" />
-            <Typography variant="body2" color="text.secondary">Quick find...</Typography>
+            <Typography variant="body2" color="text.secondary">{t('quickFind')}</Typography>
           </Box>
-          <IconButton sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', display: { xs: 'none', sm: 'flex' } }}>
+          <IconButton sx={{ bgcolor: 'background.paper', border: '1px solid #e2e8f0', display: { xs: 'none', sm: 'flex' } }}>
             <Bell size={20} />
           </IconButton>
         </Box>
@@ -208,32 +255,32 @@ export default function AddEmployee() {
                       </IconButton>
                     </Box>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Allowed JPG, GIF or PNG. Max size of 800K
+                      {t('allowedImageFormats')}
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <Grid container spacing={2}>
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        <TextField fullWidth label="First Name" placeholder="e.g. John" value={formData.firstName} onChange={handleInputChange('firstName')} />
+                        <TextField fullWidth label={t('firstName')} placeholder="e.g. John" value={formData.firstName} onChange={handleInputChange('firstName')} />
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        <TextField fullWidth label="Last Name" placeholder="e.g. Doe" value={formData.lastName} onChange={handleInputChange('lastName')} />
+                        <TextField fullWidth label={t('lastName')} placeholder="e.g. Doe" value={formData.lastName} onChange={handleInputChange('lastName')} />
                       </Grid>
                       <Grid size={{ xs: 12 }}>
-                        <TextField fullWidth label="Email Address" placeholder="john.doe@hospital.com" value={formData.email} onChange={handleInputChange('email')} />
+                        <TextField fullWidth label={t('emailAddress')} placeholder="john.doe@hospital.com" value={formData.email} onChange={handleInputChange('email')} />
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        <TextField fullWidth label="Phone Number" placeholder="+1 (555) 000-0000" value={formData.phone} onChange={handleInputChange('phone')} />
+                        <TextField fullWidth label={t('phoneNumber')} placeholder="+1 (555) 000-0000" value={formData.phone} onChange={handleInputChange('phone')} />
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        <TextField fullWidth select label="Gender" value={formData.gender} onChange={handleInputChange('gender')}>
-                          <MenuItem value="male">Male</MenuItem>
-                          <MenuItem value="female">Female</MenuItem>
-                          <MenuItem value="other">Other</MenuItem>
+                        <TextField fullWidth select label={t('gender')} value={formData.gender} onChange={handleInputChange('gender')}>
+                          <MenuItem value="male">{t('male')}</MenuItem>
+                          <MenuItem value="female">{t('female')}</MenuItem>
+                          <MenuItem value="other">{t('other')}</MenuItem>
                         </TextField>
                       </Grid>
                       <Grid size={{ xs: 12 }}>
-                        <TextField fullWidth multiline rows={3} label="Home Address" placeholder="Street, City, State, Zip" value={formData.address} onChange={handleInputChange('address')} />
+                        <TextField fullWidth multiline rows={3} label={t('homeAddress')} placeholder="Street, City, State, Zip" value={formData.address} onChange={handleInputChange('address')} />
                       </Grid>
                     </Grid>
                   </Grid>
@@ -251,7 +298,7 @@ export default function AddEmployee() {
               >
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth select label="Department" value={formData.department} onChange={handleInputChange('department')}>
+                    <TextField fullWidth select label={t('department')} value={formData.department} onChange={handleInputChange('department')}>
                       <MenuItem value="cardiology">Cardiology</MenuItem>
                       <MenuItem value="emergency">Emergency</MenuItem>
                       <MenuItem value="pediatrics">Pediatrics</MenuItem>
@@ -259,7 +306,7 @@ export default function AddEmployee() {
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth select label="Job Role" value={formData.jobRole} onChange={handleInputChange('jobRole')}>
+                    <TextField fullWidth select label={t('jobTitle')} value={formData.jobRole} onChange={handleInputChange('jobRole')}>
                       <MenuItem value="doctor">Doctor</MenuItem>
                       <MenuItem value="nurse">Nurse</MenuItem>
                       <MenuItem value="tech">Technician</MenuItem>
@@ -267,20 +314,20 @@ export default function AddEmployee() {
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth label="Employee ID" placeholder="e.g. EMP-1029" value={formData.employeeId} onChange={handleInputChange('employeeId')} />
+                    <TextField fullWidth label={t('employeeId')} placeholder="e.g. EMP-1029" value={formData.employeeId} onChange={handleInputChange('employeeId')} />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth type="date" label="Joining Date" InputLabelProps={{ shrink: true }} value={formData.joiningDate} onChange={handleInputChange('joiningDate')} />
+                    <TextField fullWidth type="date" label={t('joiningDate')} InputLabelProps={{ shrink: true }} value={formData.joiningDate} onChange={handleInputChange('joiningDate')} />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth select label="Employment Type" value={formData.employmentType} onChange={handleInputChange('employmentType')}>
-                      <MenuItem value="full-time">Full-time</MenuItem>
-                      <MenuItem value="part-time">Part-time</MenuItem>
-                      <MenuItem value="contract">Contract</MenuItem>
+                    <TextField fullWidth select label={t('employmentType')} value={formData.employmentType} onChange={handleInputChange('employmentType')}>
+                      <MenuItem value="full-time">{t('fullTime')}</MenuItem>
+                      <MenuItem value="part-time">{t('partTime')}</MenuItem>
+                      <MenuItem value="contract">{t('contract')}</MenuItem>
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth label="Base Salary" placeholder="Annual amount" value={formData.baseSalary} onChange={handleInputChange('baseSalary')} />
+                    <TextField fullWidth label={t('baseSalary')} placeholder="Annual amount" value={formData.baseSalary} onChange={handleInputChange('baseSalary')} />
                   </Grid>
                 </Grid>
               </motion.div>
@@ -295,38 +342,38 @@ export default function AddEmployee() {
                 transition={{ duration: 0.3 }}
               >
                 <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>Documents & Compliance</Typography>
-                  <Typography variant="body2" color="text.secondary">Upload mandatory medical certifications and verify regulatory compliance details.</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>{t('documentsCompliance')}</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('uploadMandatoryDocs')}</Typography>
                 </Box>
 
                 <Box sx={{ mb: 5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                     <FileText size={18} color="#2b7cee" />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, fontSize: 12 }}>Required Documents</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, fontSize: 12 }}>{t('requiredDocuments')}</Typography>
                   </Box>
                   
                   <Grid container spacing={3}>
-                    <FileUploadBox id="license" label="Medical License (Board Cert)" icon={FileText} description="Medical board certification" />
-                    <FileUploadBox id="id" label="National ID / Passport" icon={UploadCloud} description="PDF, JPG, or PNG (max 10MB)" />
-                    <FileUploadBox id="degrees" label="Academic Degrees" icon={GraduationCap} description="Certified copies only" />
-                    <FileUploadBox id="background" label="Background Check Report" icon={FileCheck} description="Security clearance report" />
+                    <FileUploadBox id="license" label={t('medicalLicense')} icon={FileText} description="Medical board certification" />
+                    <FileUploadBox id="id" label={t('nationalId')} icon={UploadCloud} description="PDF, JPG, or PNG (max 10MB)" />
+                    <FileUploadBox id="degrees" label={t('academicDegrees')} icon={GraduationCap} description="Certified copies only" />
+                    <FileUploadBox id="background" label={t('backgroundCheck')} icon={FileCheck} description="Security clearance report" />
                   </Grid>
                 </Box>
 
                 <Box sx={{ mb: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                     <ShieldCheck size={18} color="#2b7cee" />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, fontSize: 12 }}>Compliance Details</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, fontSize: 12 }}>{t('complianceDetails')}</Typography>
                   </Box>
                   <Grid container spacing={3}>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField fullWidth label="License Number" placeholder="e.g. MED-12345-89" value={formData.licenseNumber} onChange={handleInputChange('licenseNumber')} />
+                      <TextField fullWidth label={t('licenseNumber')} placeholder="e.g. MED-12345-89" value={formData.licenseNumber} onChange={handleInputChange('licenseNumber')} />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField fullWidth label="Issuing Authority" placeholder="e.g. State Medical Board" value={formData.issuingAuthority} onChange={handleInputChange('issuingAuthority')} />
+                      <TextField fullWidth label={t('issuingAuthority')} placeholder="e.g. State Medical Board" value={formData.issuingAuthority} onChange={handleInputChange('issuingAuthority')} />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField fullWidth type="date" label="License Expiry Date" InputLabelProps={{ shrink: true }} value={formData.licenseExpiryDate} onChange={handleInputChange('licenseExpiryDate')} />
+                      <TextField fullWidth type="date" label={t('licenseExpiryDate')} InputLabelProps={{ shrink: true }} value={formData.licenseExpiryDate} onChange={handleInputChange('licenseExpiryDate')} />
                     </Grid>
                   </Grid>
                 </Box>
@@ -343,10 +390,10 @@ export default function AddEmployee() {
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>Final Review</Typography>
-                    <Typography variant="body2" color="text.secondary">Verify all details before finalizing onboarding process.</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>{t('finalReview')}</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('verifyDetails')}</Typography>
                   </Box>
-                  <Chip label="STEP 4 OF 4" size="small" sx={{ fontWeight: 700, color: 'primary.main', bgcolor: 'primary.light', borderRadius: 1 }} />
+                  <Chip label={`STEP 4 OF 4`} size="small" sx={{ fontWeight: 700, color: 'primary.main', bgcolor: 'primary.light', borderRadius: 1 }} />
                 </Box>
 
                 {/* Personal Information Section */}
@@ -354,7 +401,7 @@ export default function AddEmployee() {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <User size={18} color="#94a3b8" />
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>Personal Information</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>{t('personalInformation')}</Typography>
                     </Box>
                     <Button startIcon={<Edit2 size={14} />} size="small" onClick={() => setActiveStep(0)} sx={{ fontWeight: 700 }}>EDIT</Button>
                   </Box>
@@ -368,23 +415,23 @@ export default function AddEmployee() {
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Grid container spacing={3}>
                         <Grid size={{ xs: 12, sm: 4 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Full Name</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('firstName')} {t('lastName')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.firstName} {formData.lastName}</Typography>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 4 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Email Address</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('emailAddress')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.email}</Typography>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 4 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Phone Number</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('phoneNumber')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.phone}</Typography>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 8 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Residential Address</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('homeAddress')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.address}</Typography>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 4 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Gender</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('gender')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)}</Typography>
                         </Grid>
                       </Grid>
@@ -397,25 +444,25 @@ export default function AddEmployee() {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Briefcase size={18} color="#94a3b8" />
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>Employment Details</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>{t('employmentDetails')}</Typography>
                     </Box>
                     <Button startIcon={<Edit2 size={14} />} size="small" onClick={() => setActiveStep(1)} sx={{ fontWeight: 700 }}>EDIT</Button>
                   </Box>
                   <Grid container spacing={3}>
                     <Grid size={{ xs: 12, sm: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Job Title</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('jobTitle')}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.jobRole.charAt(0).toUpperCase() + formData.jobRole.slice(1)}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Department</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('department')}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.department.charAt(0).toUpperCase() + formData.department.slice(1)}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Employee ID</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('employeeId')}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.employeeId}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Joining Date</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>{t('joiningDate')}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData.joiningDate}</Typography>
                     </Grid>
                   </Grid>
@@ -426,7 +473,7 @@ export default function AddEmployee() {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <FileText size={18} color="#94a3b8" />
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>Compliance Documents</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>{t('complianceDocuments')}</Typography>
                     </Box>
                     <Button startIcon={<Edit2 size={14} />} size="small" onClick={() => setActiveStep(2)} sx={{ fontWeight: 700 }}>EDIT</Button>
                   </Box>
@@ -466,9 +513,9 @@ export default function AddEmployee() {
                 sx={{ p: 0, mt: 0.5, color: 'primary.main' }} 
               />
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>Declaration & Accuracy</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>{t('declarationAccuracy')}</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
-                  I confirm that all provided information is accurate and verified according to hospital policy. I understand that any misrepresentation may result in disqualification or termination of the onboarding process.
+                  {t('declarationText')}
                 </Typography>
               </Box>
             </Box>
@@ -481,19 +528,19 @@ export default function AddEmployee() {
               startIcon={<ChevronLeft size={18} />}
               sx={{ color: 'text.secondary', fontWeight: 600, order: { xs: 2, sm: 1 } }}
             >
-              {activeStep === 3 ? 'Previous Step' : 'Previous'}
+              {activeStep === 3 ? t('previousStep') : t('previous')}
             </Button>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, order: { xs: 1, sm: 2 } }}>
-              <Button variant="outlined" sx={{ fontWeight: 600, borderRadius: 2, px: 3 }}>Save as Draft</Button>
+              <Button variant="outlined" sx={{ fontWeight: 600, borderRadius: 2, px: 3 }}>{t('saveAsDraft')}</Button>
               {activeStep === steps.length - 1 ? (
                 <Button 
                   variant="contained" 
                   startIcon={<UserCheck size={18} />}
-                  onClick={() => navigate('/staff')}
+                  onClick={handleComplete}
                   disabled={!declaration}
                   sx={{ px: 4, py: 1.2, borderRadius: 2, fontWeight: 700, bgcolor: 'primary.main' }}
                 >
-                  Complete Onboarding
+                  {t('completeOnboarding')}
                 </Button>
               ) : (
                 <Button 
@@ -502,7 +549,7 @@ export default function AddEmployee() {
                   onClick={handleNext}
                   sx={{ px: 4, py: 1.2, borderRadius: 2, fontWeight: 700 }}
                 >
-                  {activeStep === 2 ? 'Next: Review' : 'Continue'}
+                  {activeStep === 2 ? t('nextReview') : t('continueBtn')}
                 </Button>
               )}
             </Box>
@@ -517,9 +564,9 @@ export default function AddEmployee() {
       }}>
         <Info size={20} color="#2b7cee" style={{ marginTop: 2 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>Compliance Check Required</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>{t('complianceCheckRequired')}</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
-            All uploaded documents must be original certified copies. Please ensure the <Box component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>License Expiry Date</Box> is at least 6 months from today to prevent immediate compliance alerts.
+            {t('complianceCheckText')}
           </Typography>
         </Box>
       </Box>

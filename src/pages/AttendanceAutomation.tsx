@@ -82,7 +82,7 @@ export default function AttendanceAutomation() {
       >
         <Grid container spacing={3}>
           {/* Status Overview */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card sx={{ bgcolor: 'primary.main', color: 'white', mb: 2 }}>
               <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
                 <Box>
@@ -104,7 +104,7 @@ export default function AttendanceAutomation() {
           </Grid>
 
           {/* Rules Configuration */}
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <motion.div variants={itemVariants}>
               <Card sx={{ mb: 3 }}>
                 <CardContent sx={{ p: 3 }}>
@@ -116,8 +116,8 @@ export default function AttendanceAutomation() {
                   </Box>
 
                   <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Grid size={{ xs: 12 }}>
+                      <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Auto Check-Out</Typography>
                           <Typography variant="caption" color="text.secondary">Automatically check out staff after 12 hours of inactivity.</Typography>
@@ -126,8 +126,8 @@ export default function AttendanceAutomation() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12}>
-                      <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Grid size={{ xs: 12 }}>
+                      <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
                           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Overtime Calculation</Typography>
                           <Typography variant="caption" color="text.secondary">Automatically calculate and flag overtime hours exceeding 8 hours/day.</Typography>
@@ -136,8 +136,8 @@ export default function AttendanceAutomation() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12}>
-                      <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                    <Grid size={{ xs: 12 }}>
+                      <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                           <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Late Arrival Grace Period</Typography>
@@ -147,10 +147,10 @@ export default function AttendanceAutomation() {
                         </Box>
                         <Divider sx={{ mb: 2 }} />
                         <Grid container spacing={2} alignItems="center">
-                          <Grid item xs={8}>
+                          <Grid size={{ xs: 8 }}>
                             <Typography variant="body2">Grace Period (Minutes)</Typography>
                           </Grid>
-                          <Grid item xs={4}>
+                          <Grid size={{ xs: 4 }}>
                             <TextField type="number" size="small" fullWidth defaultValue={15} />
                           </Grid>
                         </Grid>
@@ -170,19 +170,19 @@ export default function AttendanceAutomation() {
                   </Box>
 
                   <Grid container spacing={2}>
-                     <Grid item xs={12}>
+                     <Grid size={{ xs: 12 }}>
                       <FormControlLabel 
                         control={<Switch checked={lateNotifications} onChange={(e) => setLateNotifications(e.target.checked)} />} 
                         label={<Typography variant="body2" sx={{ fontWeight: 500 }}>Notify Manager on Late Arrival (&gt;30 mins)</Typography>} 
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <FormControlLabel 
                         control={<Switch defaultChecked />} 
                         label={<Typography variant="body2" sx={{ fontWeight: 500 }}>Send 'Missed Punch' Reminder to Staff</Typography>} 
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <FormControlLabel 
                         control={<Switch defaultChecked />} 
                         label={<Typography variant="body2" sx={{ fontWeight: 500 }}>Alert HR on Consecutive Absences (3 days)</Typography>} 
@@ -195,7 +195,7 @@ export default function AttendanceAutomation() {
           </Grid>
 
           {/* Integrations & Devices */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <motion.div variants={itemVariants}>
               <Card sx={{ mb: 3 }}>
                 <CardContent sx={{ p: 3 }}>

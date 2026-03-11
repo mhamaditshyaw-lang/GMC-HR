@@ -2,6 +2,7 @@
   "name": "GMC HR ",
   "description": "Human Resource Management System for Hospital de Clínicas de Porto Alegre (HCPA), managing staff, shifts, and compliance.",
   "requestFramePermissions": [
-    "geolocation"
+    "geolocation",
+    "camera"
   ]
 }

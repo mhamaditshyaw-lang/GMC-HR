@@ -55,7 +55,7 @@ export default function LeaveManagement() {
 
   const handleSubmit = () => {
     if (!startDate || !endDate || !reason) {
-      setSnackbar({ open: true, message: 'Please fill in all required fields (Start Date, End Date, Reason).', severity: 'error' });
+      setSnackbar({ open: true, message: t('fillRequiredFields'), severity: 'error' });
       return;
     }
 
@@ -73,7 +73,7 @@ export default function LeaveManagement() {
     setEndDate('');
     setReason('');
     setSelectedFile(null);
-    setSnackbar({ open: true, message: 'Leave request submitted successfully!', severity: 'success' });
+    setSnackbar({ open: true, message: t('leaveSubmitted'), severity: 'success' });
   };
 
   const handleCloseSnackbar = () => {
@@ -81,22 +81,74 @@ export default function LeaveManagement() {
   };
 
   if (isAdmin) {
+    const totalLeaves = leaveRequests.length;
+    const approvedLeaves = leaveRequests.filter(l => l.status === 'Approved').length;
+    const rejectedLeaves = leaveRequests.filter(l => l.status === 'Rejected').length;
+    const pendingLeaves = leaveRequests.filter(l => l.status === 'Pending').length;
+
     return (
       <Box sx={{ p: { xs: 2, md: 4 }, pb: { xs: 10, md: 4 } }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Leave Requests</Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>Review and manage employee leave requests.</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('leaveRequests')}</Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>{t('reviewLeaveRequests')}</Typography>
 
-        <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{ p: 3, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'primary.light', color: 'primary.main' }}>
+                <History size={24} />
+              </Box>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>{totalLeaves}</Typography>
+                <Typography variant="body2" color="text.secondary">{t('totalLeaves')}</Typography>
+              </Box>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{ p: 3, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'success.light', color: 'success.main' }}>
+                <CheckCircle size={24} />
+              </Box>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>{approvedLeaves}</Typography>
+                <Typography variant="body2" color="text.secondary">{t('approvedLeaves')}</Typography>
+              </Box>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{ p: 3, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'error.light', color: 'error.main' }}>
+                <XCircle size={24} />
+              </Box>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>{rejectedLeaves}</Typography>
+                <Typography variant="body2" color="text.secondary">{t('rejectedLeaves')}</Typography>
+              </Box>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card sx={{ p: 3, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'warning.light', color: 'warning.main' }}>
+                <Info size={24} />
+              </Box>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>{pendingLeaves}</Typography>
+                <Typography variant="body2" color="text.secondary">{t('pendingLeaves')}</Typography>
+              </Box>
+            </Card>
+          </Grid>
+        </Grid>
+
+        <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
           <TableContainer>
             <Table>
-              <TableHead sx={{ bgcolor: 'grey.50' }}>
+              <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>EMPLOYEE</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>TYPE</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>DATES</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>REASON</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>STATUS</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, fontSize: 12 }}>ACTIONS</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('employeeCol')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('typeCol')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('datesCol')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('reasonCol')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('statusCol')}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, fontSize: 12 }}>{t('actionsCol')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -110,17 +162,17 @@ export default function LeaveManagement() {
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>{leave.employeeName}</Typography>
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{leave.type}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{leave.type === 'Annual' ? t('annualLeave') : leave.type === 'Sick' ? t('sickLeave') : leave.type === 'Maternity' ? t('maternityLeave') : t('unpaidLeave')}</TableCell>
                     <TableCell>
                       <Typography variant="body2">{leave.start}</Typography>
-                      <Typography variant="caption" color="text.secondary">to {leave.end}</Typography>
+                      <Typography variant="caption" color="text.secondary">{t('to')} {leave.end}</Typography>
                     </TableCell>
                     <TableCell sx={{ maxWidth: 200 }}>
                       <Typography variant="body2" noWrap title={leave.reason}>{leave.reason}</Typography>
                     </TableCell>
                     <TableCell>
                       <Chip 
-                        label={leave.status} 
+                        label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : t('pending')} 
                         size="small" 
                         sx={{ 
                           fontWeight: 700, 
@@ -133,15 +185,15 @@ export default function LeaveManagement() {
                     <TableCell align="right">
                       {leave.status === 'Pending' ? (
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                          <IconButton size="small" color="success" onClick={() => { updateLeaveStatus(leave.id, 'Approved'); setSnackbar({ open: true, message: 'Leave request approved.', severity: 'success' }); }}>
+                          <IconButton size="small" color="success" onClick={() => { updateLeaveStatus(leave.id, 'Approved'); setSnackbar({ open: true, message: t('leaveApproved'), severity: 'success' }); }}>
                             <CheckCircle size={18} />
                           </IconButton>
-                          <IconButton size="small" color="error" onClick={() => { updateLeaveStatus(leave.id, 'Rejected'); setSnackbar({ open: true, message: 'Leave request rejected.', severity: 'error' }); }}>
+                          <IconButton size="small" color="error" onClick={() => { updateLeaveStatus(leave.id, 'Rejected'); setSnackbar({ open: true, message: t('leaveRejected'), severity: 'error' }); }}>
                             <XCircle size={18} />
                           </IconButton>
                         </Box>
                       ) : (
-                        <Typography variant="caption" color="text.secondary">Processed</Typography>
+                        <Typography variant="caption" color="text.secondary">{t('processed')}</Typography>
                       )}
                     </TableCell>
                   </TableRow>
@@ -162,12 +214,12 @@ export default function LeaveManagement() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, pb: { xs: 10, md: 4 } }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('applyLeave')}</Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>Submit and track your leave requests.</Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>{t('submitTrackLeave')}</Typography>
 
       <Grid container spacing={4}>
         {/* Application Form */}
         <Grid size={{ xs: 12, lg: 5 }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
+          <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
@@ -179,8 +231,8 @@ export default function LeaveManagement() {
                 >
                   <MenuItem value="Annual">{t('annualLeave')}</MenuItem>
                   <MenuItem value="Sick">{t('sickLeave')}</MenuItem>
-                  <MenuItem value="Maternity">Maternity Leave</MenuItem>
-                  <MenuItem value="Unpaid">Unpaid Leave</MenuItem>
+                  <MenuItem value="Maternity">{t('maternityLeave')}</MenuItem>
+                  <MenuItem value="Unpaid">{t('unpaidLeave')}</MenuItem>
                 </TextField>
 
                 <Grid container spacing={2}>
@@ -192,19 +244,21 @@ export default function LeaveManagement() {
                   </Grid>
                 </Grid>
 
-                <TextField fullWidth label={t('reason')} multiline rows={3} placeholder="Briefly explain your request..." value={reason} onChange={(e) => setReason(e.target.value)} />
+                <TextField fullWidth label={t('reason')} multiline rows={3} placeholder={t('brieflyExplain')} value={reason} onChange={(e) => setReason(e.target.value)} />
 
                 <Box 
                   onClick={handleUploadClick}
                   sx={{ 
                     p: 3, 
                     border: '2px dashed', 
-                    borderColor: selectedFile ? 'primary.main' : '#e2e8f0',
-                    bgcolor: selectedFile ? 'primary.50' : 'transparent',
+                    borderColor: selectedFile ? 'primary.main' : 'divider',
+                    background: selectedFile ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
                     borderRadius: 3, 
                     textAlign: 'center',
                     cursor: 'pointer',
-                    '&:hover': { bgcolor: 'grey.50', borderColor: 'primary.main' }
+                    transition: 'all 0.2s',
+                    '&:hover': { background: 'rgba(255, 255, 255, 0.1)', borderColor: 'primary.main' }
                   }}
                 >
                   <input 
@@ -218,11 +272,11 @@ export default function LeaveManagement() {
                   <Typography variant="body2" color={selectedFile ? "primary.main" : "text.secondary"} sx={{ fontWeight: selectedFile ? 700 : 400 }}>
                     {selectedFile ? selectedFile.name : t('uploadReport')}
                   </Typography>
-                  {!selectedFile && <Typography variant="caption" color="text.disabled">PDF, JPG up to 5MB</Typography>}
+                  {!selectedFile && <Typography variant="caption" color="text.disabled">{t('pdfJpgLimit')}</Typography>}
                 </Box>
 
                 <Button variant="contained" fullWidth size="large" startIcon={<Send size={18} />} sx={{ py: 1.5 }} onClick={handleSubmit}>
-                  Submit Request
+                  {t('submitRequest')}
                 </Button>
               </Box>
             </CardContent>
@@ -231,32 +285,32 @@ export default function LeaveManagement() {
 
         {/* Status Tracker */}
         <Grid size={{ xs: 12, lg: 7 }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
-            <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
+            <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <History size={20} color="#2b7cee" />
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>Leave History</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('leaveHistory')}</Typography>
             </Box>
             <TableContainer>
               <Table>
-                <TableHead sx={{ bgcolor: 'grey.50' }}>
+                <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>TYPE</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>DATES</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>STATUS</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('typeCol')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('datesCol')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>{t('statusCol')}</TableCell>
                     <TableCell align="right"></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {leaveRequests.filter(req => req.employeeName === 'Sarah Jenkins').map((leave) => (
                     <TableRow key={leave.id} hover>
-                      <TableCell sx={{ fontWeight: 600 }}>{leave.type}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{leave.type === 'Annual' ? t('annualLeave') : leave.type === 'Sick' ? t('sickLeave') : leave.type === 'Maternity' ? t('maternityLeave') : t('unpaidLeave')}</TableCell>
                       <TableCell>
                         <Typography variant="body2">{leave.start}</Typography>
-                        <Typography variant="caption" color="text.secondary">to {leave.end}</Typography>
+                        <Typography variant="caption" color="text.secondary">{t('to')} {leave.end}</Typography>
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={leave.status} 
+                          label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : t('pending')} 
                           size="small" 
                           sx={{ 
                             fontWeight: 700, 
