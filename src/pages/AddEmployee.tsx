@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useThemeMode } from '../contexts/ThemeContext';
+import { api } from '../api/client';
 
 export default function AddEmployee() {
   const { t } = useLanguage();
@@ -127,7 +128,29 @@ export default function AddEmployee() {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    try {
+      await api.employees.create({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        gender: formData.gender,
+        role: formData.jobRole,
+        job_title: formData.jobRole,
+        employment_type: formData.employmentType,
+        base_salary: parseFloat(formData.baseSalary) || 0,
+        employee_id: formData.employeeId,
+        joining_date: formData.joiningDate,
+        license_number: formData.licenseNumber,
+        issuing_authority: formData.issuingAuthority,
+        license_expiry_date: formData.licenseExpiryDate,
+        status: 'Active',
+        user_role: 'STAFF',
+      });
+    } catch (err) {
+      console.error('Failed to save employee, continuing anyway', err);
+    }
     setIsSubmitted(true);
     setTimeout(() => {
       navigate('/staff');
