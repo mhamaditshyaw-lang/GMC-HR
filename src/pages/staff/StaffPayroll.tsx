@@ -1,94 +1,328 @@
-import React from 'react';
-import { Box, Typography, Card, CardContent, Grid, Button, List, ListItem, ListItemText, Divider, Paper, IconButton } from '@mui/material';
-import { CreditCard, Download, Receipt, Wallet, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
-import { motion } from 'motion/react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import React, { useState, useEffect } from 'react';
+import { 
+  DollarSign, Clock, ShieldAlert, Car, Building, 
+  CreditCard, BriefcaseMedical, Landmark, Activity,
+  FileText, Download, ChevronRight, HeartPulse, PiggyBank,
+  CheckCircle2, AlertCircle, ArrowRight
+} from 'lucide-react';
+
+// --- Dummy Data ---
+const EMPLOYEE_DATA = {
+  id: 'EMP-001',
+  name: 'Dr. Sarah Jenkins',
+  role: 'Chief of Surgery',
+  department: 'Surgery',
+  baseSalary: 18500,
+  netPay: 14200,
+  month: 'March 2026',
+  
+  // Overtime & On-Call
+  extraHours: 12,
+  onCallShifts: 3,
+  overtimeRate: '1.5x',
+  overtimeTotal: 1200,
+  
+  // Allowances
+  allowances: {
+    nightShift: 450,
+    hazardRisk: 800,
+    transport: 250,
+    total: 1500
+  },
+  
+  // Deductions (Strictly Tax, Health, 401k)
+  deductions: {
+    tax: 4500,
+    healthInsurance: 600,
+    retirement401k: 900,
+    total: 6000
+  },
+  
+  // Salary Advances
+  advances: {
+    active: true,
+    totalRemaining: 2400,
+    currentEmi: 400,
+    progressPercent: 60 // 60% paid off
+  },
+  
+  // Payment Details
+  paymentMethod: {
+    bankName: 'Chase Bank',
+    iban: 'US44 CHAS **** **** **** 1234',
+    accountMask: '**** 1234'
+  }
+};
+
+// --- Sub-Components ---
+
+const StatCard = ({ title, value, icon: Icon, colorClass, subtitle }: any) => (
+  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between h-full">
+    <div className="flex items-center justify-between mb-4">
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClass.bg}`}>
+        <Icon className={`w-6 h-6 ${colorClass.text}`} />
+      </div>
+    </div>
+    <div>
+      <p className="text-sm font-semibold text-slate-500 mb-1">{title}</p>
+      <h3 className="text-3xl font-bold text-slate-900 tracking-tight">${value.toLocaleString()}</h3>
+      {subtitle && <p className="text-xs font-medium text-slate-400 mt-2">{subtitle}</p>}
+    </div>
+  </div>
+);
 
 export default function StaffPayroll() {
-  const { t } = useLanguage();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const payslips = [
-    { id: 1, month: 'January 2026', amount: '$4,890', date: 'Jan 31, 2026' },
-    { id: 2, month: 'December 2025', amount: '$5,120', date: 'Dec 31, 2025' },
-    { id: 3, month: 'November 2025', amount: '$4,890', date: 'Nov 30, 2025' },
-  ];
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const data = EMPLOYEE_DATA;
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, pb: { xs: 10, md: 4 } }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('payroll')}</Typography>
-        <Typography variant="body1" color="text.secondary">View your earnings and download payslips.</Typography>
-      </Box>
+    <div className="p-6 max-w-7xl mx-auto font-sans bg-slate-50 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Payroll Profile</h1>
+            <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-md border border-blue-200 uppercase tracking-wider">
+              {data.month}
+            </span>
+          </div>
+          <p className="text-sm text-slate-500 font-medium">
+            {data.name} • {data.role} ({data.department})
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+            <Download className="w-4 h-4" />
+            Download Payslip
+          </button>
+        </div>
+      </div>
 
-      <Grid container spacing={3}>
-        {/* Current Month Summary */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4, mb: 3 }}>
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Current Month Breakdown (Feb 2026)</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body1" color="text.secondary">Base Salary</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>$4,500.00</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body1" color="text.secondary">Overtime (12 hrs)</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'success.main' }}>+$480.00</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body1" color="text.secondary">Bonuses</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'success.main' }}>+$150.00</Typography>
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body1" color="text.secondary">Tax Deductions</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'error.main' }}>-$240.00</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body1" color="text.secondary">Insurance</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'error.main' }}>-$100.00</Typography>
-                </Box>
-                <Box sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                  <Box>
-                    <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Net Salary</Typography>
-                    <Typography variant="h4" color="primary.main" sx={{ fontWeight: 800 }}>$4,790.00</Typography>
-                  </Box>
-                  <Button variant="contained" startIcon={<Download size={18} />} sx={{ borderRadius: 2 }}>
-                    {t('downloadPDF')}
-                  </Button>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* Top Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <StatCard 
+          title="Net Pay" 
+          value={data.netPay} 
+          icon={DollarSign} 
+          colorClass={{ bg: 'bg-emerald-50', text: 'text-emerald-600' }}
+          subtitle="Take-home amount after all deductions"
+        />
+        <StatCard 
+          title="Gross Base Salary" 
+          value={data.baseSalary} 
+          icon={Building} 
+          colorClass={{ bg: 'bg-blue-50', text: 'text-blue-600' }}
+          subtitle="Standard monthly compensation"
+        />
+        <StatCard 
+          title="Total Deductions" 
+          value={data.deductions.total} 
+          icon={Activity} 
+          colorClass={{ bg: 'bg-red-50', text: 'text-red-600' }}
+          subtitle="Tax, Health, and Retirement"
+        />
+      </div>
 
-        {/* History */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
-            <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Receipt size={20} color="#2b7cee" />
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('payslips')}</Typography>
-            </Box>
-            <List sx={{ p: 0 }}>
-              {payslips.map((slip, idx) => (
-                <React.Fragment key={slip.id}>
-                  <ListItem sx={{ py: 2, px: 3, display: 'flex', justifyContent: 'space-between' }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{slip.month}</Typography>
-                      <Typography variant="caption" color="text.secondary">{slip.date}</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>{slip.amount}</Typography>
-                      <IconButton size="small" color="primary"><Download size={16} /></IconButton>
-                    </Box>
-                  </ListItem>
-                  {idx < payslips.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-            </List>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Overtime & On-Call Pay Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <Clock className="w-5 h-5 text-amber-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Overtime & On-Call</h3>
+            </div>
+            <span className="text-lg font-bold text-amber-600">+${data.overtimeTotal.toLocaleString()}</span>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-slate-500">Total Extra Hours</span>
+              <span className="text-sm font-bold text-slate-900">{data.extraHours} hrs</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-slate-500">On-Call Shifts</span>
+              <span className="text-sm font-bold text-slate-900">{data.onCallShifts} shifts</span>
+            </div>
+            <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+              <span className="text-sm font-medium text-slate-500">Calculated Rate</span>
+              <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-md border border-slate-200">
+                {data.overtimeRate}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Allowances Breakdown */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-50 rounded-lg">
+                <BriefcaseMedical className="w-5 h-5 text-indigo-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Hospital Allowances</h3>
+            </div>
+            <span className="text-lg font-bold text-indigo-600">+${data.allowances.total.toLocaleString()}</span>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                <span className="text-sm font-medium text-slate-600">Night Shift Allowance</span>
+              </div>
+              <span className="text-sm font-bold text-slate-900">${data.allowances.nightShift.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span className="text-sm font-medium text-slate-600">Hazard/Risk Allowance</span>
+              </div>
+              <span className="text-sm font-bold text-slate-900">${data.allowances.hazardRisk.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                <span className="text-sm font-medium text-slate-600">Transport Allowance</span>
+              </div>
+              <span className="text-sm font-bold text-slate-900">${data.allowances.transport.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Deductions (Strictly Standard Items) */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-1">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-50 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Deductions</h3>
+            </div>
+            <span className="text-lg font-bold text-red-600">-${data.deductions.total.toLocaleString()}</span>
+          </div>
+          
+          <div className="space-y-5">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <Landmark className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-600">Federal/State Tax</span>
+              </div>
+              <span className="text-sm font-bold text-slate-900">${data.deductions.tax.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <HeartPulse className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-600">Health Insurance</span>
+              </div>
+              <span className="text-sm font-bold text-slate-900">${data.deductions.healthInsurance.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <PiggyBank className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-600">Retirement (401k)</span>
+              </div>
+              <span className="text-sm font-bold text-slate-900">${data.deductions.retirement401k.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Salary Advances & Loans Tracking */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-1">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-50 rounded-lg">
+                <DollarSign className="w-5 h-5 text-teal-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Salary Advances</h3>
+            </div>
+          </div>
+          
+          {data.advances.active ? (
+            <div className="space-y-5">
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-xs font-medium text-slate-500 mb-1">Remaining Balance</p>
+                  <p className="text-2xl font-bold text-slate-900">${data.advances.totalRemaining.toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-medium text-slate-500 mb-1">Current Month EMI</p>
+                  <p className="text-sm font-bold text-red-600">-${data.advances.currentEmi.toLocaleString()}</p>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-xs font-medium text-slate-500 mb-2">
+                  <span>Repayment Progress</span>
+                  <span>{data.advances.progressPercent}%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-teal-500 h-full rounded-full transition-all duration-1000" 
+                    style={{ width: `${data.advances.progressPercent}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full py-4 text-center">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+              <p className="text-sm font-medium text-slate-600">No active advances or loans.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Payment Method Details */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-1">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <CreditCard className="w-5 h-5 text-slate-700" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Payment Method</h3>
+            </div>
+            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-md border border-emerald-200 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> Verified
+            </span>
+          </div>
+          
+          <div className="bg-slate-900 rounded-xl p-5 text-white relative overflow-hidden shadow-md">
+            {/* Decorative background circles */}
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
+            <div className="absolute -left-4 -bottom-4 w-32 h-32 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
+            
+            <div className="relative z-10">
+              <p className="text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Direct Deposit</p>
+              <p className="text-lg font-bold text-white mb-6">{data.paymentMethod.bankName}</p>
+              
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-400">Account Number</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-mono tracking-widest text-slate-200">{data.paymentMethod.accountMask}</p>
+                  <Landmark className="w-5 h-5 text-slate-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

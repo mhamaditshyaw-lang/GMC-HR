@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Box, Grid, Typography, Card, CardContent, Button, Avatar, Chip, LinearProgress, IconButton } from '@mui/material';
-import { Users, CalendarClock, AlertTriangle, UserPlus, TrendingUp, TrendingDown, Plus, ChevronRight } from 'lucide-react';
+import { Box, Grid, Typography, Card, CardContent, Button, Avatar, Chip, LinearProgress, IconButton, Paper, Popover } from '@mui/material';
+import { Users, CalendarClock, AlertTriangle, UserPlus, TrendingUp, TrendingDown, Plus, ChevronRight, Phone, MessageSquare } from 'lucide-react';
 import { motion, useMotionValue, useTransform, useSpring } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useLeave } from '../contexts/LeaveContext';
@@ -84,12 +84,12 @@ const MagneticButton = ({ children, onClick, variant = 'contained', startIcon, s
 const AnimatedIcon = ({ icon: Icon, color, delay = 0 }: any) => {
   return (
     <motion.div
-      initial={{ rotate: -10, scale: 0.9 }}
-      animate={{ rotate: 10, scale: 1.1 }}
+      initial={{ scale: 0.85, opacity: 0.7 }}
+      animate={{ scale: 1.15, opacity: 1 }}
       transition={{ 
         repeat: Infinity, 
         repeatType: 'reverse', 
-        duration: 2, 
+        duration: 1.5, 
         delay,
         ease: 'easeInOut' 
       }}
@@ -139,6 +139,121 @@ const PulsingChip = ({ label, status, mode }: any) => {
   );
 };
 
+// Roster Row Component with Hover Popover
+const RosterRow = ({ row, mode, t }: any) => {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
+  return (
+    <Box 
+      onMouseEnter={handlePopoverOpen}
+      onMouseLeave={handlePopoverClose}
+      sx={{ 
+        display: 'flex', 
+        p: 2, 
+        alignItems: 'center',
+        borderBottom: '1px solid', 
+        borderColor: 'divider',
+        transition: 'background-color 0.2s',
+        fontFamily: '"Inter", sans-serif',
+        '&:hover': {
+          bgcolor: mode === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)'
+        },
+        '&:last-child': { borderBottom: 'none' }
+      }}
+    >
+      <Box sx={{ flex: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Avatar src={row.avatar} sx={{ width: 40, height: 40 }} />
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>{row.name}</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: '"Inter", sans-serif' }}>{row.role}</Typography>
+        </Box>
+      </Box>
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="body2" sx={{ fontFamily: '"Inter", sans-serif' }}>{row.ward}</Typography>
+      </Box>
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="body2" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 500 }}>{row.time}</Typography>
+      </Box>
+      <Box sx={{ flex: 1 }}>
+        {row.statusType === 'success' ? (
+          <Chip 
+            label={row.status} 
+            size="small" 
+            sx={{ 
+              bgcolor: '#10b98120', 
+              color: '#10b981', 
+              fontWeight: 600,
+              fontFamily: '"Inter", sans-serif',
+              animation: 'heartbeat 1.5s infinite ease-in-out',
+              border: '1px solid #10b98140'
+            }} 
+          />
+        ) : (
+          <Chip 
+            label={row.status} 
+            size="small" 
+            sx={{ 
+              bgcolor: '#f59e0b20', 
+              color: '#f59e0b', 
+              fontWeight: 600,
+              fontFamily: '"Inter", sans-serif',
+              border: '1px solid #f59e0b40'
+            }} 
+          />
+        )}
+      </Box>
+
+      <Popover
+        sx={{ pointerEvents: 'none' }}
+        open={open}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'center',
+          horizontal: 'right',
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
+        PaperProps={{
+          sx: { 
+            pointerEvents: 'auto', 
+            p: 1, 
+            display: 'flex', 
+            gap: 1, 
+            boxShadow: mode === 'light' ? '0 10px 30px rgba(0,0,0,0.1)' : '0 10px 30px rgba(0,0,0,0.5)',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            transform: 'translateX(-16px)'
+          }
+        }}
+      >
+        <Box 
+          onMouseEnter={handlePopoverOpen}
+          onMouseLeave={handlePopoverClose}
+          sx={{ display: 'flex', gap: 1 }}
+        >
+          <Button size="small" variant="contained" startIcon={<Phone size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif', boxShadow: 'none' }}>Call</Button>
+          <Button size="small" variant="outlined" startIcon={<MessageSquare size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif' }}>Quick Chat</Button>
+        </Box>
+      </Popover>
+    </Box>
+  );
+};
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const { leaveRequests } = useLeave();
@@ -147,10 +262,10 @@ export default function Dashboard() {
   const pendingLeavesCount = leaveRequests.filter(req => req.status === 'Pending').length;
 
   const stats = [
-    { title: t('activeStaff'), value: '142', change: '+5%', trend: 'up', icon: Users, color: '#6366f1' },
-    { title: t('openShifts'), value: '8', change: '0%', trend: 'neutral', icon: CalendarClock, color: '#f59e0b' },
-    { title: t('expiringLicenses'), value: '5', change: '-2%', trend: 'down', icon: AlertTriangle, color: '#ef4444' },
-    { title: t('pendingLeave'), value: pendingLeavesCount.toString(), change: '+3%', trend: 'up', icon: UserPlus, color: '#10b981' },
+    { title: 'Active Staff', value: '142', change: '+5%', trend: 'up', icon: Users, color: '#6366f1' },
+    { title: 'Open Shifts', value: '8', change: '0%', trend: 'neutral', icon: CalendarClock, color: '#f59e0b' },
+    { title: 'Expiring Licenses', value: '5', change: '-2%', trend: 'down', icon: AlertTriangle, color: '#ef4444' },
+    { title: 'Pending Leave', value: '3', change: '+3%', trend: 'up', icon: UserPlus, color: '#10b981' },
   ];
 
   const roster = [
@@ -172,13 +287,23 @@ export default function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Card sx={{ position: 'relative', overflow: 'hidden' }}>
+        <Card sx={{ 
+          position: 'relative', 
+          overflow: 'hidden',
+          background: mode === 'light' 
+            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%)'
+            : 'linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.4) 100%)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid',
+          borderColor: mode === 'light' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.1)',
+          boxShadow: mode === 'light' ? '0 8px 32px rgba(0, 0, 0, 0.05)' : '0 8px 32px rgba(0, 0, 0, 0.3)',
+        }}>
           <Box sx={{ 
             position: 'absolute', top: '-50%', right: '-10%', 
             width: '60%', height: '200%', 
             background: mode === 'light' 
-              ? 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.15) 0%, transparent 70%)'
-              : 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.2) 0%, transparent 70%)',
+              ? 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.25) 0%, transparent 70%)'
+              : 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.3) 0%, transparent 70%)',
             filter: 'blur(40px)', 
             transform: 'rotate(-15deg)',
             pointerEvents: 'none'
@@ -186,11 +311,11 @@ export default function Dashboard() {
           <CardContent sx={{ p: { xs: 3, md: 5 }, position: 'relative', zIndex: 1 }}>
             <Grid container alignItems="center" justifyContent="space-between" spacing={4}>
               <Grid size={{ xs: 12, md: 8 }}>
-                <Typography variant="h1" sx={{ mb: 2, fontSize: { xs: '2rem', md: '2.5rem' }, color: 'text.primary' }}>
+                <Typography variant="h1" sx={{ mb: 2, fontSize: { xs: '2rem', md: '2.5rem' }, color: 'text.primary', fontWeight: 800 }}>
                   {t('welcome')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', maxWidth: 600, lineHeight: 1.6 }}>
-                  {t('youHave')} <Box component="span" sx={{ fontWeight: 600, color: '#f59e0b' }}>3 {t('pendingCompliance')}</Box> {t('and')} <Box component="span" sx={{ fontWeight: 600, color: '#6366f1' }}>8 {t('openShiftsMsg')}</Box> {t('requireAttention')}
+                  You have <Box component="span" sx={{ fontWeight: 600, color: '#f59e0b' }}>3 compliance alerts</Box> and <Box component="span" sx={{ fontWeight: 600, color: '#6366f1' }}>8 open shifts</Box> today.
                 </Typography>
               </Grid>
               <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
@@ -212,18 +337,21 @@ export default function Dashboard() {
           {stats.map((stat, index) => (
             <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.title}>
               <motion.div variants={itemVariants} style={{ height: '100%' }}>
-                <Card sx={{ 
+                <Paper elevation={0} sx={{ 
                   height: '100%', 
+                  border: '1px solid',
+                  borderColor: mode === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
+                  borderRadius: 4,
                   transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)', 
                   '&:hover': { 
-                    transform: 'translateY(-4px)',
+                    transform: 'translateY(-6px)',
                     boxShadow: mode === 'light' 
                       ? '0 20px 40px rgba(0,0,0,0.08)' 
                       : '0 20px 40px rgba(0,0,0,0.4)',
                     borderColor: `${stat.color}40`
                   } 
                 }}>
-                  <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                       <Box sx={{ 
                         p: 1.5, 
@@ -270,8 +398,8 @@ export default function Dashboard() {
                         }} 
                       />
                     </Box>
-                  </CardContent>
-                </Card>
+                  </Box>
+                </Paper>
               </motion.div>
             </Grid>
           ))}
@@ -295,59 +423,27 @@ export default function Dashboard() {
               variants={containerVariants}
               initial="hidden"
               animate="show"
-              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
-              {roster.map((row, index) => (
-                <motion.div key={row.id} variants={itemVariants}>
-                  <Card sx={{ 
-                    p: 2, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: 2,
-                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-2px) scale(1.01)',
-                      boxShadow: mode === 'light' 
-                        ? '0 12px 24px rgba(0,0,0,0.06)' 
-                        : '0 12px 24px rgba(0,0,0,0.3)',
-                      borderColor: mode === 'light' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.5)',
-                      background: mode === 'light' ? 'rgba(255,255,255,0.8)' : 'rgba(30, 41, 59, 0.6)'
-                    }
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: { xs: '100%', sm: 'auto' } }}>
-                      <Avatar src={row.avatar} sx={{ width: 48, height: 48, border: `2px solid ${mode === 'light' ? '#fff' : '#1e293b'}`, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-                      <Box>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>{row.name}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 1 }}>
-                          <span>{row.id}</span>
-                          <span>•</span>
-                          <span>{row.role}</span>
-                        </Typography>
-                      </Box>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, width: { xs: '100%', sm: 'auto' }, justifyContent: 'space-between' }}>
-                      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                        <Typography variant="caption" color="text.secondary" display="block">{t('wardUnit')}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{row.ward}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" display="block">{t('time')}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.time}</Typography>
-                      </Box>
-                      <Box sx={{ minWidth: 100, textAlign: 'right' }}>
-                        <PulsingChip label={row.status} status={row.statusType} mode={mode} />
-                      </Box>
-                      <IconButton size="small" sx={{ display: { xs: 'none', sm: 'flex' }, color: 'text.secondary' }}>
-                        <ChevronRight size={20} />
-                      </IconButton>
-                    </Box>
-                  </Card>
-                </motion.div>
-              ))}
+              <Paper variant="outlined" sx={{ 
+                borderRadius: 3, 
+                overflow: 'hidden', 
+                borderColor: mode === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                fontFamily: '"Inter", sans-serif'
+              }}>
+                <Box sx={{ display: 'flex', p: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: mode === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }}>
+                  <Typography variant="caption" sx={{ flex: 2, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>EMPLOYEE</Typography>
+                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>WARD</Typography>
+                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>SHIFT TIME</Typography>
+                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>STATUS</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  {roster.map((row) => (
+                    <motion.div key={row.id} variants={itemVariants}>
+                      <RosterRow row={row} mode={mode} t={t} />
+                    </motion.div>
+                  ))}
+                </Box>
+              </Paper>
             </motion.div>
           </motion.div>
         </Grid>
@@ -435,6 +531,11 @@ export default function Dashboard() {
         @keyframes shimmer {
           0% { background-position: 200% 0; }
           100% { background-position: -200% 0; }
+        }
+        @keyframes heartbeat {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
       `}</style>
     </Box>

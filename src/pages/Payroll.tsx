@@ -1,474 +1,355 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, Select, FormControl, InputLabel, TableSortLabel } from '@mui/material';
-import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, AlertCircle, MoreHorizontal, ArrowUpRight, ReceiptText, Eye, FileText, Edit, X, Sliders } from 'lucide-react';
-import { motion } from 'motion/react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { useLanguage } from '../contexts/LanguageContext';
+import { motion, AnimatePresence } from 'motion/react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { 
+  CheckCircle2, ChevronRight, FileText, DollarSign, 
+  X, Users, TrendingUp, AlertCircle, Download, PlayCircle,
+  Building, ShieldCheck, Landmark, Settings2
+} from 'lucide-react';
 
-const payrollData = [
-  { id: 1, name: 'Dr. Sarah Jenkins', role: 'Senior Cardiologist', base: '$15,416', bonus: '$1,200', deductions: '$3,850', net: '$12,766', status: 'Paid', month: 'March 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNLMrA2Q9GJBVI25Q-V8ng9tKE_BEWHIvBZHPkFfOXjnOi_DCs_Oj1KFHUHPHgTM8wm_dFOxEo671sX9WVbR6Jt-xAu69SumW9Vo3_M93d0sSbKjB18K61rICj0PPneoRA1hxgCJRvFCDlwa366dky83qo5v9yzEpMOC8AdgSlPbVZVC74ksSEez9QgVplJBSQiqVkY7RFDVbyTMNI94CFuzDYo6FQtr9v-41nf9Zw77_Bb2Rejb-rRw5HVGPxPh8olocGpfx4SF8' },
-  { id: 2, name: 'Dr. Emily Chen', role: 'Senior Resident', base: '$9,166', bonus: '$500', deductions: '$2,290', net: '$7,376', status: 'Paid', month: 'March 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxdNJwmk758EkbaL7gBPr64a8wFu5TljQXU9fIYj6h2Iu-wTiWif_yfRurTm1t6wQxU4WufdQUfarzUlT6Z8zTcAXQzokPzYuzaqHQF03KUFHfkNAcy8UiWmDgASp92rgk5-0F7UIYZAEsNkAe9mLT5FCqCrHzOxdFW7A6eGSsV6lUK-BKZmRMIaClNWIKAEQHIi3Qyd5AwOd8EoU4NA19e3Po9mo1V5GMPC8LlXmv7CKz7qs_fKIPCOSVjFe_GhwUC8glk474DTQ' },
-  { id: 3, name: 'Mark Wilson', role: 'Registered Nurse', base: '$6,250', bonus: '$200', deductions: '$1,560', net: '$4,890', status: 'Pending', month: 'March 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCRXTq2HqBx3mfSPgjl-5nNlDh9roLTRij3tKMB8SC3EhQNGGta-gt9LAhD0AdYevWXfMSleS-ZIV1st09emj-6Cwg2MncWwmR8Fjst0EpNxVgo179xwCgQQ_BOBJzHGWLuMaPFOik4fDu0XeThEdeQxwJfgdxADZoBD5yYkxyslPRz37MQzEMJThw8wwaf0Tv7srpVda7k22KjuM3w0iUED3IHiDKSxaCn4QAAwtgt8_TQqVwJa4-DDZNCCtHLZtsWtcDDcFM-Vws' },
-  { id: 4, name: 'Dr. James Lee', role: 'Anesthesiologist', base: '$14,583', bonus: '$1,000', deductions: '$3,645', net: '$11,938', status: 'Paid', month: 'March 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLo-uE5TQiX4CEGqdd7qnwz6NDEoTwCSSDAK9S3rS60llQRCPKEpjBHJVmqSszMDEITfRjZfqrSXmz_FKy4j4R0h5Vyomo1QgpSi_uW7eLf0k7Qt_nBy9jzDo9OCKDE0XQRK4gdcgxMCmmzqGbGasi_21Z7kUL7cagKB-Razght0kN45hPxFBgVOeX__HZnIXEdCscy_UAndP-8Ph_bRUhdOleYeCNstQEosWv9lVR5XuEfXuhFinLeKEqKyfuOPmBljWAQY3-K0Q' },
-  { id: 5, name: 'Linda Kim', role: 'Neurosurgeon', base: '$18,750', bonus: '$2,500', deductions: '$4,680', net: '$16,570', status: 'Paid', month: 'March 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDsjCCVVt3rMPxIyGeUqMzTyhvVHWF8N5edEwS1ARC08hOYFDTx3-ljAFDT1Bky6AvSog9mrYkpLXsOvQfRSG2xusEElCmD1ULuBfY7VnXVTTc_4O5A7uwQR4T8gZ6Wm-6tR7NC3svMb6rSfJphYLBUwR90nmDg6I5MfVSlm0m-GSM2CZ984NgWQjlHt-HmEQwtTHSpUpVgIsJj4ojvKRdhPze73QwvxHWp9Z9H9_sIapMUL2VXklLCKazbUA8JEa7B5icXwDDp-HA' },
-  { id: 6, name: 'Dr. Sarah Jenkins', role: 'Senior Cardiologist', base: '$15,416', bonus: '$1,000', deductions: '$3,850', net: '$12,566', status: 'Paid', month: 'February 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNLMrA2Q9GJBVI25Q-V8ng9tKE_BEWHIvBZHPkFfOXjnOi_DCs_Oj1KFHUHPHgTM8wm_dFOxEo671sX9WVbR6Jt-xAu69SumW9Vo3_M93d0sSbKjB18K61rICj0PPneoRA1hxgCJRvFCDlwa366dky83qo5v9yzEpMOC8AdgSlPbVZVC74ksSEez9QgVplJBSQiqVkY7RFDVbyTMNI94CFuzDYo6FQtr9v-41nf9Zw77_Bb2Rejb-rRw5HVGPxPh8olocGpfx4SF8' },
-  { id: 7, name: 'Dr. Emily Chen', role: 'Senior Resident', base: '$9,166', bonus: '$400', deductions: '$2,290', net: '$7,276', status: 'Paid', month: 'February 2026', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxdNJwmk758EkbaL7gBPr64a8wFu5TljQXU9fIYj6h2Iu-wTiWif_yfRurTm1t6wQxU4WufdQUfarzUlT6Z8zTcAXQzokPzYuzaqHQF03KUFHfkNAcy8UiWmDgASp92rgk5-0F7UIYZAEsNkAe9mLT5FCqCrHzOxdFW7A6eGSsV6lUK-BKZmRMIaClNWIKAEQHIi3Qyd5AwOd8EoU4NA19e3Po9mo1V5GMPC8LlXmv7CKz7qs_fKIPCOSVjFe_GhwUC8glk474DTQ' },
+// --- Dummy Data ---
+const WORKFLOW_STEPS = ['Draft', 'HR Approved', 'Finance Approved', 'Paid'];
+
+const PAYROLL_DATA = [
+  { id: 'EMP-001', name: 'Dr. Sarah Jenkins', role: 'Chief of Surgery', department: 'Surgery', base: 18500, net: 14200, status: 'Ready' },
+  { id: 'EMP-002', name: 'Mark Wilson', role: 'ER Nurse', department: 'Emergency', base: 7200, net: 6150, status: 'Ready' },
+  { id: 'EMP-003', name: 'Dr. Emily Chen', role: 'Pediatrician', department: 'Pediatrics', base: 14000, net: 11800, status: 'Ready' },
+  { id: 'EMP-004', name: 'James Rodriguez', role: 'ICU Technician', department: 'ICU', base: 6500, net: 5400, status: 'Review Needed' },
+  { id: 'EMP-005', name: 'Anita Patel', role: 'Anesthesiologist', department: 'Surgery', base: 16000, net: 12900, status: 'Ready' },
 ];
 
-const chartData = [
-  { month: 'Jan', amount: 420000 },
-  { month: 'Feb', amount: 435000 },
-  { month: 'Mar', amount: 410000 },
-  { month: 'Apr', amount: 450000 },
-  { month: 'May', amount: 465000 },
-  { month: 'Jun', amount: 480000 },
+const CHART_DATA = [
+  { name: 'Total Earnings', value: 845000, color: '#10b981' }, // Emerald 500
+  { name: 'Total Deductions', value: 215000, color: '#ef4444' }  // Red 500
 ];
 
-const stats = [
-  { label: 'Total Payroll', value: '$480,250', change: '+4.2%', icon: <DollarSign size={20} />, color: 'primary.main' },
-  { label: 'Pending Approvals', value: '12', change: '8 staff', icon: <AlertCircle size={20} />, color: 'warning.main' },
-  { label: 'Tax & Benefits', value: '$92,400', change: '19.2%', icon: <ReceiptText size={20} />, color: 'success.main' },
-  { label: 'Next Pay Cycle', value: '5 Days', change: 'Mar 01', icon: <Calendar size={20} />, color: 'info.main' },
-];
+// --- Components ---
 
+const ApprovalPipeline = ({ currentStep }: { currentStep: number }) => {
+  return (
+    <div className="w-full py-6 mb-8 overflow-x-auto">
+      <div className="flex items-center justify-between min-w-[600px] max-w-4xl mx-auto px-4">
+        {WORKFLOW_STEPS.map((step, index) => {
+          const isCompleted = index < currentStep;
+          const isActive = index === currentStep;
+          
+          return (
+            <div key={step} className="flex items-center relative flex-1 last:flex-none">
+              <div className="flex flex-col items-center relative z-10">
+                <motion.div 
+                  initial={false}
+                  animate={{ 
+                    scale: isActive ? 1.1 : 1,
+                    backgroundColor: isCompleted || isActive ? '#2563eb' : '#ffffff',
+                    borderColor: isCompleted || isActive ? '#2563eb' : '#cbd5e1'
+                  }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-sm transition-colors duration-300`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-6 h-6 text-white" />
+                  ) : (
+                    <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-400'}`}>
+                      {index + 1}
+                    </span>
+                  )}
+                </motion.div>
+                <span className={`absolute top-12 text-xs font-semibold whitespace-nowrap ${isActive ? 'text-blue-700' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>
+                  {step}
+                </span>
+              </div>
+              {index < WORKFLOW_STEPS.length - 1 && (
+                <div className="flex-1 mx-4 relative h-1 bg-slate-200 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: '0%' }}
+                    animate={{ width: isCompleted ? '100%' : '0%' }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="absolute top-0 left-0 h-full bg-blue-600"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const PayslipSlideOver = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40"
+            onClick={onClose}
+          />
+          <motion.div 
+            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto border-l border-slate-200 flex flex-col"
+          >
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 sticky top-0 z-10">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Payroll Run Preview</h2>
+                <p className="text-xs text-slate-500 font-medium mt-1">March 2026 • 142 Employees</p>
+              </div>
+              <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 flex-1">
+              {/* Donut Chart Section */}
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6">
+                <h3 className="text-sm font-semibold text-slate-800 mb-4">Earnings vs. Deductions</h3>
+                <div className="h-[200px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={CHART_DATA}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={65}
+                        outerRadius={85}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {CHART_DATA.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => `$${value.toLocaleString()}`}
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-xs text-slate-500 font-medium">Net Payout</span>
+                    <span className="text-lg font-bold text-slate-900">$630K</span>
+                  </div>
+                </div>
+                <div className="flex justify-center gap-6 mt-2">
+                  {CHART_DATA.map(item => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-xs font-medium text-slate-600">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Summary Details */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-800">Run Breakdown</h3>
+                
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-600">Base Salaries</span>
+                    <span className="text-sm font-semibold text-slate-900">$720,000.00</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-600">Overtime & On-Call</span>
+                    <span className="text-sm font-semibold text-slate-900">$85,000.00</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Allowances</span>
+                    <span className="text-sm font-semibold text-slate-900">$40,000.00</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-600">Taxes</span>
+                    <span className="text-sm font-semibold text-red-600">-$125,000.00</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-600">Health Insurance</span>
+                    <span className="text-sm font-semibold text-red-600">-$45,000.00</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Retirement (401k)</span>
+                    <span className="text-sm font-semibold text-red-600">-$45,000.00</span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-bold text-slate-900">Total Net Payout</span>
+                    <span className="text-lg font-bold text-emerald-600">$630,000.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-200 bg-white sticky bottom-0">
+              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                Submit for HR Approval
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// --- Main Page Component ---
 export default function Payroll() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const [employees, setEmployees] = useState(payrollData);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('March 2026');
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Sorting state
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-  const [orderBy, setOrderBy] = useState<string>('name');
-  
-  const open = Boolean(anchorEl);
-  
-  const handleRequestSort = (property: string) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
+  const [currentWorkflowStep, setCurrentWorkflowStep] = useState(0);
 
-  const parseCurrency = (val: string) => parseFloat(val.replace(/[^0-9.-]+/g,""));
+  useEffect(() => {
+    // Simulate data fetching
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const filteredEmployees = useMemo(() => {
-    let filtered = employees.filter(emp => {
-      const matchesMonth = emp.month === selectedMonth;
-      const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) || emp.role.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesMonth && matchesSearch;
-    });
-
-    filtered.sort((a, b) => {
-      let valueA: any = a[orderBy as keyof typeof a];
-      let valueB: any = b[orderBy as keyof typeof b];
-
-      // Handle currency sorting
-      if (['base', 'bonus', 'deductions', 'net'].includes(orderBy)) {
-        valueA = parseCurrency(valueA as string);
-        valueB = parseCurrency(valueB as string);
-      }
-
-      if (valueA < valueB) {
-        return order === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return order === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-
-    return filtered;
-  }, [employees, selectedMonth, searchQuery, order, orderBy]);
-
-  const selectedEmployee = employees.find(emp => emp.id === selectedId);
-
-  const stats = [
-    { label: t('totalPayroll'), value: '$480,250', change: '+4.2%', icon: <DollarSign size={20} />, color: 'primary.main' },
-    { label: t('pendingApprovals'), value: '12', change: '8 staff', icon: <AlertCircle size={20} />, color: 'warning.main' },
-    { label: t('taxBenefits'), value: '$92,400', change: '19.2%', icon: <ReceiptText size={20} />, color: 'success.main' },
-    { label: t('nextPayCycle'), value: '5 Days', change: 'Mar 01', icon: <Calendar size={20} />, color: 'info.main' },
-  ];
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, id: number) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedId(id);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleViewDetails = () => {
-    setViewDialogOpen(true);
-    handleMenuClose();
-  };
-
-  const handleEditEntry = () => {
-    setEditDialogOpen(true);
-    handleMenuClose();
-  };
-
-  const handleDownloadSlip = () => {
-    setSnackbarMessage(`Downloading payslip for ${selectedEmployee?.name}...`);
-    setSnackbarOpen(true);
-    handleMenuClose();
-    // Simulate download delay
-    setTimeout(() => {
-        setSnackbarMessage(`Payslip downloaded successfully.`);
-    }, 2000);
-  };
-
-  const handleDownloadReports = () => {
-    const headers = ['ID', 'Name', 'Role', 'Base Salary', 'Bonus', 'Deductions', 'Net Pay', 'Status'];
-    const rows = employees.map(emp => [
-      emp.id,
-      emp.name,
-      emp.role,
-      emp.base.replace(/,/g, ''),
-      emp.bonus.replace(/,/g, ''),
-      emp.deductions.replace(/,/g, ''),
-      emp.net.replace(/,/g, ''),
-      emp.status
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Payroll_Report_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    setSnackbarMessage('Payroll report downloaded successfully.');
-    setSnackbarOpen(true);
-  };
-
-  const handleProcessPayroll = () => {
-    const pendingCount = employees.filter(e => e.status === 'Pending').length;
-    
-    if (pendingCount === 0) {
-      setSnackbarMessage('All payrolls are already processed.');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setEmployees(prev => prev.map(emp => 
-      emp.status === 'Pending' ? { ...emp, status: 'Paid' } : emp
-    ));
-
-    setSnackbarMessage(`Successfully processed ${pendingCount} pending payroll(s).`);
-    setSnackbarOpen(true);
-  };
-
-  const handleCloseDialogs = () => {
-    setViewDialogOpen(false);
-    setEditDialogOpen(false);
-    setSelectedId(null);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('payrollManagement')}</Typography>
-          <Typography variant="body1" color="text.secondary">{t('processSalaries')}</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" startIcon={<Sliders size={18} />} onClick={() => navigate('/payroll/adjustments')}>{t('adjustments')}</Button>
-          <Button variant="outlined" startIcon={<Download size={18} />} onClick={handleDownloadReports}>{t('downloadReports')}</Button>
-          <Button variant="contained" startIcon={<CreditCard size={18} />} onClick={handleProcessPayroll}>{t('processPayroll')}</Button>
-        </Box>
-      </Box>
+    <div className="p-6 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Payroll Dashboard</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">Manage and process hospital-wide payroll</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => navigate('/payroll/adjustments')}
+            className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <Settings2 className="w-4 h-4" />
+            Adjustments
+          </button>
+          <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+            <Download className="w-4 h-4" />
+            Export Report
+          </button>
+          <button 
+            onClick={() => setIsSlideOverOpen(true)}
+            className="px-4 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <PlayCircle className="w-4 h-4" />
+            Process Current Month
+          </button>
+        </div>
+      </div>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {stats.map((stat) => (
-          <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.label}>
-            <Card sx={{ bgcolor: 'background.paper' }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box sx={{ p: 1.5, bgcolor: `${stat.color.split('.')[0]}.light`, color: stat.color, borderRadius: 2, display: 'flex' }}>
-                    {stat.icon}
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'success.main' }}>
-                    <Typography variant="caption" sx={{ fontWeight: 700 }}>{stat.change}</Typography>
-                    <ArrowUpRight size={14} />
-                  </Box>
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>{stat.value}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{stat.label}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      {/* Workflow Status */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+        <h2 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-wider">Current Cycle Status: March 2026</h2>
+        <ApprovalPipeline currentStep={currentWorkflowStep} />
+      </div>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12 }}>
-          <Card>
-            <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('payrollHistory')}</Typography>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <InputLabel id="month-filter-label">{t('month')}</InputLabel>
-                  <Select
-                    labelId="month-filter-label"
-                    value={selectedMonth}
-                    label={t('month')}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                  >
-                    <MenuItem value="January 2026">January 2026</MenuItem>
-                    <MenuItem value="February 2026">February 2026</MenuItem>
-                    <MenuItem value="March 2026">March 2026</MenuItem>
-                    <MenuItem value="April 2026">April 2026</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField 
-                  size="small" 
-                  placeholder={t('searchEmployee')} 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  sx={{ width: 250 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search size={18} color="#94a3b8" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-            </Box>
-            <TableContainer>
-              <Table>
-                <TableHead sx={{ bgcolor: 'grey.50' }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>
-                      <TableSortLabel
-                        active={orderBy === 'name'}
-                        direction={orderBy === 'name' ? order : 'asc'}
-                        onClick={() => handleRequestSort('name')}
-                      >
-                        {t('employeeCol')}
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>
-                      <TableSortLabel
-                        active={orderBy === 'base'}
-                        direction={orderBy === 'base' ? order : 'asc'}
-                        onClick={() => handleRequestSort('base')}
-                      >
-                        {t('baseSalary')}
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>
-                      <TableSortLabel
-                        active={orderBy === 'bonus'}
-                        direction={orderBy === 'bonus' ? order : 'asc'}
-                        onClick={() => handleRequestSort('bonus')}
-                      >
-                        {t('bonus')}
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>
-                      <TableSortLabel
-                        active={orderBy === 'deductions'}
-                        direction={orderBy === 'deductions' ? order : 'asc'}
-                        onClick={() => handleRequestSort('deductions')}
-                      >
-                        {t('deductions')}
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase' }}>
-                      <TableSortLabel
-                        active={orderBy === 'net'}
-                        direction={orderBy === 'net' ? order : 'asc'}
-                        onClick={() => handleRequestSort('net')}
-                      >
-                        {t('netPay')}
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell align="right"></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredEmployees.map((row) => (
-                    <TableRow key={row.id} hover>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar src={row.avatar} sx={{ width: 36, height: 36 }} />
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">{row.role}</Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ fontSize: 14 }}>{row.base}</TableCell>
-                      <TableCell sx={{ fontSize: 14, color: 'success.main', fontWeight: 600 }}>{row.bonus}</TableCell>
-                      <TableCell sx={{ fontSize: 14, color: 'error.main' }}>{row.deductions}</TableCell>
-                      <TableCell sx={{ fontSize: 14, fontWeight: 700 }}>{row.net}</TableCell>
-                      <TableCell align="right">
-                        <IconButton size="small" onClick={(e) => handleMenuOpen(e, row.id)}>
-                          <MoreHorizontal size={18} />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-blue-600" />
+            </div>
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" /> +2.4%
+            </span>
+          </div>
+          <p className="text-sm font-medium text-slate-500 mb-1">Estimated Net Payout</p>
+          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">$630,000.00</h3>
+        </div>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 0,
-          sx: {
-            overflow: 'visible',
-            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
-            mt: 1.5,
-            '& .MuiAvatar-root': {
-              width: 32,
-              height: 32,
-              ml: -0.5,
-              mr: 1,
-            },
-          },
-        }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem onClick={handleViewDetails}>
-          <ListItemIcon>
-            <Eye size={18} />
-          </ListItemIcon>
-          <ListItemText>{t('viewDetails')}</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleDownloadSlip}>
-          <ListItemIcon>
-            <FileText size={18} />
-          </ListItemIcon>
-          <ListItemText>{t('downloadSlip')}</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleEditEntry}>
-          <ListItemIcon>
-            <Edit size={18} />
-          </ListItemIcon>
-          <ListItemText>{t('editEntry')}</ListItemText>
-        </MenuItem>
-      </Menu>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <Users className="w-5 h-5 text-indigo-600" />
+            </div>
+          </div>
+          <p className="text-sm font-medium text-slate-500 mb-1">Processed Employees</p>
+          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">142 <span className="text-sm font-medium text-slate-400">/ 145</span></h3>
+        </div>
 
-      {/* View Details Dialog */}
-      <Dialog open={viewDialogOpen} onClose={handleCloseDialogs} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {t('payrollDetails')}
-          <IconButton onClick={handleCloseDialogs} size="small">
-            <X size={20} />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {selectedEmployee && (
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Avatar src={selectedEmployee.avatar} sx={{ width: 64, height: 64 }} />
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{selectedEmployee.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">{selectedEmployee.role}</Typography>
-                  <Chip 
-                    label={selectedEmployee.status === 'Paid' ? t('approved') : t('pending')} 
-                    size="small" 
-                    sx={{ mt: 0.5, bgcolor: selectedEmployee.status === 'Paid' ? 'success.light' : 'warning.light', color: selectedEmployee.status === 'Paid' ? 'success.main' : 'warning.main', fontWeight: 600 }} 
-                  />
-                </Box>
-              </Box>
-              
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>{t('baseSalary')}</Typography>
-                  <Typography variant="h6">{selectedEmployee.base}</Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>{t('bonus')}</Typography>
-                  <Typography variant="h6" color="success.main">{selectedEmployee.bonus}</Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>{t('deductions')}</Typography>
-                  <Typography variant="h6" color="error.main">{selectedEmployee.deductions}</Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>{t('netPay')}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{selectedEmployee.net}</Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialogs}>{t('close')}</Button>
-          <Button variant="contained" startIcon={<Download size={16} />} onClick={handleDownloadSlip}>{t('downloadSlip')}</Button>
-        </DialogActions>
-      </Dialog>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
+            </div>
+          </div>
+          <p className="text-sm font-medium text-slate-500 mb-1">Requires Review</p>
+          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">3 <span className="text-sm font-medium text-slate-400">staff members</span></h3>
+        </div>
+      </div>
 
-      {/* Edit Entry Dialog */}
-      <Dialog open={editDialogOpen} onClose={handleCloseDialogs} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {t('editPayrollEntry')}
-          <IconButton onClick={handleCloseDialogs} size="small">
-            <X size={20} />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {selectedEmployee && (
-            <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Avatar src={selectedEmployee.avatar} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{selectedEmployee.name}</Typography>
-              </Box>
-              <TextField label={t('baseSalary')} defaultValue={selectedEmployee.base.replace('$', '').replace(',', '')} fullWidth InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
-              <TextField label={t('bonus')} defaultValue={selectedEmployee.bonus.replace('$', '').replace(',', '')} fullWidth InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
-              <TextField label={t('deductions')} defaultValue={selectedEmployee.deductions.replace('$', '').replace(',', '')} fullWidth InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
-              <TextField label={t('statusCol')} select defaultValue={selectedEmployee.status} fullWidth SelectProps={{ native: true }}>
-                <option value="Paid">Paid</option>
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-              </TextField>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialogs}>{t('cancel')}</Button>
-          <Button variant="contained" onClick={() => { handleCloseDialogs(); setSnackbarMessage('Entry updated successfully'); setSnackbarOpen(true); }}>{t('saveChanges')}</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Data Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <h3 className="text-base font-bold text-slate-900">Employee Payroll Roster</h3>
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="Search employees..." 
+              className="pl-3 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
+            />
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Employee</th>
+                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Department</th>
+                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Base Salary</th>
+                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Net Pay</th>
+                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {PAYROLL_DATA.map((emp) => (
+                <tr key={emp.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-900">{emp.name}</span>
+                      <span className="text-xs font-medium text-slate-500">{emp.id} • {emp.role}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm font-medium text-slate-700">{emp.department}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm font-medium text-slate-700">${emp.base.toLocaleString()}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm font-bold text-slate-900">${emp.net.toLocaleString()}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${
+                      emp.status === 'Ready' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}>
+                      {emp.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center justify-end gap-1 ml-auto">
+                      View <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+      <PayslipSlideOver isOpen={isSlideOverOpen} onClose={() => setIsSlideOverOpen(false)} />
+    </div>
   );
 }
