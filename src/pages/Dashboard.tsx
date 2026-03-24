@@ -246,8 +246,8 @@ const RosterRow = ({ row, mode, t }: any) => {
           onMouseLeave={handlePopoverClose}
           sx={{ display: 'flex', gap: 1 }}
         >
-          <Button size="small" variant="contained" startIcon={<Phone size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif', boxShadow: 'none' }}>Call</Button>
-          <Button size="small" variant="outlined" startIcon={<MessageSquare size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif' }}>Quick Chat</Button>
+          <Button size="small" variant="contained" startIcon={<Phone size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif', boxShadow: 'none' }}>{t('call')}</Button>
+          <Button size="small" variant="outlined" startIcon={<MessageSquare size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif' }}>{t('quickChat')}</Button>
         </Box>
       </Popover>
     </Box>
@@ -262,10 +262,10 @@ export default function Dashboard() {
   const pendingLeavesCount = leaveRequests.filter(req => req.status === 'Pending').length;
 
   const stats = [
-    { title: 'Active Staff', value: '142', change: '+5%', trend: 'up', icon: Users, color: '#6366f1' },
-    { title: 'Open Shifts', value: '8', change: '0%', trend: 'neutral', icon: CalendarClock, color: '#f59e0b' },
-    { title: 'Expiring Licenses', value: '5', change: '-2%', trend: 'down', icon: AlertTriangle, color: '#ef4444' },
-    { title: 'Pending Leave', value: '3', change: '+3%', trend: 'up', icon: UserPlus, color: '#10b981' },
+    { title: t('activeStaff'), value: '142', change: '+5%', trend: 'up', icon: Users, color: '#6366f1' },
+    { title: t('openShifts'), value: '8', change: '0%', trend: 'neutral', icon: CalendarClock, color: '#f59e0b' },
+    { title: t('expiringLicenses'), value: '5', change: '-2%', trend: 'down', icon: AlertTriangle, color: '#ef4444' },
+    { title: t('pendingLeave'), value: '3', change: '+3%', trend: 'up', icon: UserPlus, color: '#10b981' },
   ];
 
   const roster = [
@@ -315,7 +315,7 @@ export default function Dashboard() {
                   {t('welcome')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', maxWidth: 600, lineHeight: 1.6 }}>
-                  You have <Box component="span" sx={{ fontWeight: 600, color: '#f59e0b' }}>3 compliance alerts</Box> and <Box component="span" sx={{ fontWeight: 600, color: '#6366f1' }}>8 open shifts</Box> today.
+                  {t('youHave')} <Box component="span" sx={{ fontWeight: 600, color: '#f59e0b' }}>3 {t('complianceAlerts')}</Box> {t('and')} <Box component="span" sx={{ fontWeight: 600, color: '#6366f1' }}>8 {t('openShiftsMsg')}</Box> {t('today')}.
                 </Typography>
               </Grid>
               <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
@@ -431,10 +431,10 @@ export default function Dashboard() {
                 fontFamily: '"Inter", sans-serif'
               }}>
                 <Box sx={{ display: 'flex', p: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: mode === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }}>
-                  <Typography variant="caption" sx={{ flex: 2, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>EMPLOYEE</Typography>
-                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>WARD</Typography>
-                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>SHIFT TIME</Typography>
-                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>STATUS</Typography>
+                  <Typography variant="caption" sx={{ flex: 2, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>{t('employeeCol')}</Typography>
+                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>{t('wardUnit').toUpperCase()}</Typography>
+                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>{t('time').toUpperCase()}</Typography>
+                  <Typography variant="caption" sx={{ flex: 1, fontWeight: 600, color: 'text.secondary', letterSpacing: '0.05em' }}>{t('statusCol').toUpperCase()}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                   {roster.map((row) => (

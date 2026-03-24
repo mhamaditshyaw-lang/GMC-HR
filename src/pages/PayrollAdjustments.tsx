@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert, Divider, SelectChangeEvent } from '@mui/material';
 import { Plus, DollarSign, TrendingUp, TrendingDown, Calendar, Edit, Trash2, X, Save, History, User, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Mock Data (Initial State)
 const initialEmployees = [
@@ -23,9 +24,7 @@ const initialIncreases = [
 ];
 
 const initialDeductions = [
-  { id: 1, employeeId: 3, type: 'Health Insurance', amount: '$150', frequency: 'Monthly', status: 'Active' },
   { id: 2, employeeId: 2, type: 'Loan Repayment', amount: '$200', frequency: 'Monthly', status: 'Active' },
-  { id: 3, employeeId: 1, type: '401k Contribution', amount: '$1,500', frequency: 'Monthly', status: 'Active' },
 ];
 
 const initialPayrollHistory = [
@@ -36,6 +35,7 @@ const initialPayrollHistory = [
 ];
 
 export default function PayrollAdjustments() {
+  const { t, isRTL } = useLanguage();
   const [employees, setEmployees] = useState(initialEmployees);
   const [bonuses, setBonuses] = useState(initialBonuses);
   const [increases, setIncreases] = useState(initialIncreases);
@@ -191,7 +191,7 @@ export default function PayrollAdjustments() {
       }
     }
 
-    setSnackbarMessage(editingId ? 'Adjustment updated successfully' : 'Adjustment added successfully');
+    setSnackbarMessage(editingId ? t('adjustmentUpdated') : t('adjustmentAdded'));
     setSnackbarOpen(true);
     handleCloseDialog();
   };
@@ -204,7 +204,7 @@ export default function PayrollAdjustments() {
     } else if (type === 'deduction') {
       setDeductions(deductions.filter(d => d.id !== id));
     }
-    setSnackbarMessage('Adjustment deleted successfully');
+    setSnackbarMessage(t('adjustmentDeleted'));
     setSnackbarOpen(true);
   };
 
@@ -262,11 +262,11 @@ export default function PayrollAdjustments() {
         oneTimeDeductionIds.has(d.id) ? { ...d, status: 'Completed' } : d
       ));
 
-      setSnackbarMessage('Payroll processed successfully.');
+      setSnackbarMessage(t('payrollProcessedSuccess'));
       setSnackbarOpen(true);
     } catch (error) {
       console.error('Payroll processing error:', error);
-      setSnackbarMessage('Error processing payroll. Please check input values.');
+      setSnackbarMessage(t('payrollProcessError'));
       setSnackbarOpen(true);
     }
   };
@@ -337,25 +337,25 @@ Generated on:   ${new Date().toLocaleDateString()}
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      setSnackbarMessage('Error downloading slip.');
+      setSnackbarMessage(t('errorDownloadingSlip'));
       setSnackbarOpen(true);
     }
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ p: 4 }} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header & Employee Selector */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Employee Payroll Profile</Typography>
-          <Typography variant="body1" color="text.secondary">Manage individual adjustments and view history.</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>{t('employeePayrollProfile')}</Typography>
+          <Typography variant="body1" color="text.secondary">{t('manageIndividualAdjustments')}</Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
           <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Department</InputLabel>
+            <InputLabel>{t('department')}</InputLabel>
             <Select
               value={selectedDepartment}
-              label="Department"
+              label={t('department')}
               onChange={handleDepartmentChange}
             >
               {departments.map((dept) => (
@@ -365,12 +365,12 @@ Generated on:   ${new Date().toLocaleDateString()}
           </FormControl>
 
           <FormControl sx={{ minWidth: 250 }}>
-            <InputLabel>Select Employee</InputLabel>
+            <InputLabel>{t('selectEmployee')}</InputLabel>
             <Select
               value={selectedEmployeeId || ''}
-              label="Select Employee"
+              label={t('selectEmployee')}
               onChange={handleEmployeeChange}
-              startAdornment={<User size={18} style={{ marginRight: 8, color: '#64748b' }} />}
+              startAdornment={<User size={18} style={{ marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0, color: '#64748b' }} />}
             >
               {filteredEmployees.map((emp) => (
                 <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
@@ -383,14 +383,14 @@ Generated on:   ${new Date().toLocaleDateString()}
       {/* Employee Summary Card */}
       {selectedEmployee && (
         <Card sx={{ mb: 4, bgcolor: 'primary.main', color: 'white' }}>
-          <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 3, p: 3 }}>
+          <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 3, p: 3, flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: isRTL ? 'right' : 'left' } }}>
             <Avatar src={selectedEmployee.avatar} sx={{ width: 80, height: 80, border: '3px solid white' }} />
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>{selectedEmployee.name}</Typography>
               <Typography variant="body1" sx={{ opacity: 0.9 }}>{selectedEmployee.role}</Typography>
             </Box>
-            <Box sx={{ textAlign: 'right' }}>
-              <Typography variant="caption" sx={{ textTransform: 'uppercase', opacity: 0.8, fontWeight: 600 }}>Current Base Salary</Typography>
+            <Box sx={{ textAlign: { xs: 'center', sm: isRTL ? 'left' : 'right' } }}>
+              <Typography variant="caption" sx={{ textTransform: 'uppercase', opacity: 0.8, fontWeight: 600 }}>{t('currentBaseSalary')}</Typography>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>{selectedEmployee.baseSalary}</Typography>
             </Box>
           </CardContent>
@@ -405,9 +405,9 @@ Generated on:   ${new Date().toLocaleDateString()}
             <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.50' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <DollarSign size={18} className="text-blue-600" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Bonuses</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('bonuses')}</Typography>
               </Box>
-              <Button size="small" startIcon={<Plus size={14} />} onClick={() => handleOpenDialog('bonus')}>Add</Button>
+              <Button size="small" startIcon={<Plus size={14} />} onClick={() => handleOpenDialog('bonus')}>{t('add')}</Button>
             </Box>
             <CardContent sx={{ p: 0 }}>
               {employeeBonuses.length > 0 ? (
@@ -420,11 +420,11 @@ Generated on:   ${new Date().toLocaleDateString()}
                             <Typography variant="body2" fontWeight={600}>{bonus.type}</Typography>
                             <Typography variant="caption" color="text.secondary">{bonus.date}</Typography>
                           </TableCell>
-                          <TableCell align="right">
+                          <TableCell align={isRTL ? 'left' : 'right'}>
                             <Typography variant="body2" color="success.main" fontWeight={600}>{bonus.amount}</Typography>
                             <Chip label={bonus.status} size="small" sx={{ height: 20, fontSize: 10, mt: 0.5 }} color={bonus.status === 'Approved' || bonus.status === 'Paid' ? 'success' : 'warning'} variant="outlined" />
                           </TableCell>
-                          <TableCell align="right" width={80}>
+                          <TableCell align={isRTL ? 'left' : 'right'} width={80}>
                             <IconButton size="small" onClick={() => handleOpenDialog('bonus', bonus.id)}><Edit size={14} /></IconButton>
                             <IconButton size="small" onClick={() => handleDelete(bonus.id, 'bonus')} color="error"><Trash2 size={14} /></IconButton>
                           </TableCell>
@@ -435,7 +435,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                 </TableContainer>
               ) : (
                 <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
-                  <Typography variant="body2">No bonuses found.</Typography>
+                  <Typography variant="body2">{t('noBonusesFound')}</Typography>
                 </Box>
               )}
             </CardContent>
@@ -448,9 +448,9 @@ Generated on:   ${new Date().toLocaleDateString()}
             <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.50' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <TrendingUp size={18} className="text-green-600" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Annual Increases</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('annualIncreases')}</Typography>
               </Box>
-              <Button size="small" startIcon={<Plus size={14} />} onClick={() => handleOpenDialog('increase')}>Add</Button>
+              <Button size="small" startIcon={<Plus size={14} />} onClick={() => handleOpenDialog('increase')}>{t('add')}</Button>
             </Box>
             <CardContent sx={{ p: 0 }}>
               {employeeIncreases.length > 0 ? (
@@ -462,15 +462,15 @@ Generated on:   ${new Date().toLocaleDateString()}
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Typography variant="body2" fontWeight={600}>{inc.currentSalary}</Typography>
-                              <ArrowRight size={12} />
+                              <ArrowRight size={12} style={{ transform: isRTL ? 'rotate(180deg)' : 'none' }} />
                               <Typography variant="body2" fontWeight={700}>{inc.newSalary}</Typography>
                             </Box>
-                            <Typography variant="caption" color="text.secondary">Effective: {inc.effectiveDate}</Typography>
+                            <Typography variant="caption" color="text.secondary">{t('effective')}: {inc.effectiveDate}</Typography>
                           </TableCell>
-                          <TableCell align="right">
+                          <TableCell align={isRTL ? 'left' : 'right'}>
                             <Chip label={`+${inc.increase}`} size="small" color="success" sx={{ height: 20, fontSize: 10, fontWeight: 700 }} />
                           </TableCell>
-                          <TableCell align="right" width={80}>
+                          <TableCell align={isRTL ? 'left' : 'right'} width={80}>
                             <IconButton size="small" onClick={() => handleOpenDialog('increase', inc.id)}><Edit size={14} /></IconButton>
                             <IconButton size="small" onClick={() => handleDelete(inc.id, 'increase')} color="error"><Trash2 size={14} /></IconButton>
                           </TableCell>
@@ -481,7 +481,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                 </TableContainer>
               ) : (
                 <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
-                  <Typography variant="body2">No salary increases recorded.</Typography>
+                  <Typography variant="body2">{t('noSalaryIncreasesRecorded')}</Typography>
                 </Box>
               )}
             </CardContent>
@@ -494,9 +494,9 @@ Generated on:   ${new Date().toLocaleDateString()}
             <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.50' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <TrendingDown size={18} className="text-red-600" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Monthly Deductions</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('monthlyDeductions')}</Typography>
               </Box>
-              <Button size="small" startIcon={<Plus size={14} />} onClick={() => handleOpenDialog('deduction')}>Add</Button>
+              <Button size="small" startIcon={<Plus size={14} />} onClick={() => handleOpenDialog('deduction')}>{t('add')}</Button>
             </Box>
             <CardContent sx={{ p: 0 }}>
               {employeeDeductions.length > 0 ? (
@@ -509,7 +509,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                             <Typography variant="body2" fontWeight={600}>{ded.type}</Typography>
                             <Typography variant="caption" color="text.secondary">{ded.frequency}</Typography>
                           </TableCell>
-                          <TableCell align="right">
+                          <TableCell align={isRTL ? 'left' : 'right'}>
                             <Typography variant="body2" color="error.main" fontWeight={600}>{ded.amount}</Typography>
                             <Chip 
                               label={ded.status} 
@@ -519,7 +519,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                               variant={ded.status === 'Completed' ? 'outlined' : 'filled'}
                             />
                           </TableCell>
-                          <TableCell align="right" width={80}>
+                          <TableCell align={isRTL ? 'left' : 'right'} width={80}>
                             <IconButton size="small" onClick={() => handleOpenDialog('deduction', ded.id)}><Edit size={14} /></IconButton>
                             <IconButton size="small" onClick={() => handleDelete(ded.id, 'deduction')} color="error"><Trash2 size={14} /></IconButton>
                           </TableCell>
@@ -530,7 +530,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                 </TableContainer>
               ) : (
                 <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
-                  <Typography variant="body2">No active deductions.</Typography>
+                  <Typography variant="body2">{t('noActiveDeductions')}</Typography>
                 </Box>
               )}
             </CardContent>
@@ -540,19 +540,19 @@ Generated on:   ${new Date().toLocaleDateString()}
 
       {/* History Section */}
       <Card>
-        <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <History size={20} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>Payroll History</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('payrollHistory')}</Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
             <Button 
               variant="outlined" 
               startIcon={<Save size={16} />}
               onClick={handleDownloadHistory}
               disabled={!selectedEmployee || employeeHistory.length === 0}
             >
-              Download History
+              {t('downloadHistory')}
             </Button>
             <Button 
               variant="contained" 
@@ -561,7 +561,7 @@ Generated on:   ${new Date().toLocaleDateString()}
               onClick={handleProcessPayroll}
               disabled={!selectedEmployee}
             >
-              Process Current Month
+              {t('processCurrentMonth')}
             </Button>
           </Box>
         </Box>
@@ -569,13 +569,13 @@ Generated on:   ${new Date().toLocaleDateString()}
           <Table>
             <TableHead sx={{ bgcolor: 'grey.50' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>Period</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Base Salary</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Bonuses</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Deductions</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Net Pay</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('period')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('baseSalary')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('bonuses')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('deductions')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('netPay')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('status')}</TableCell>
+                <TableCell align={isRTL ? 'left' : 'right'}>{t('actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -590,15 +590,15 @@ Generated on:   ${new Date().toLocaleDateString()}
                     <TableCell>
                       <Chip label={row.status} size="small" color="success" variant="outlined" />
                     </TableCell>
-                    <TableCell align="right">
-                      <Button size="small" variant="text" onClick={() => handleDownloadSlip(row)}>View Slip</Button>
+                    <TableCell align={isRTL ? 'left' : 'right'}>
+                      <Button size="small" variant="text" onClick={() => handleDownloadSlip(row)}>{t('viewSlip')}</Button>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                    No payroll history available for this employee.
+                    {t('noPayrollHistory')}
                   </TableCell>
                 </TableRow>
               )}
@@ -608,30 +608,30 @@ Generated on:   ${new Date().toLocaleDateString()}
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth dir={isRTL ? 'rtl' : 'ltr'}>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {editingId ? 'Edit' : 'Add'} {dialogType === 'bonus' && 'Bonus'}
-          {dialogType === 'increase' && 'Salary Increase'}
-          {dialogType === 'deduction' && 'Deduction'}
+          {editingId ? t('edit') : t('add')} {dialogType === 'bonus' && t('bonuses')}
+          {dialogType === 'increase' && t('annualIncreases')}
+          {dialogType === 'deduction' && t('monthlyDeductions')}
           <IconButton onClick={handleCloseDialog} size="small"><X size={20} /></IconButton>
         </DialogTitle>
         <DialogContent dividers>
           <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             
             {/* Read-only Employee Field */}
-            <TextField label="Employee" value={selectedEmployee?.name} disabled fullWidth />
+            <TextField label={t('selectEmployee')} value={selectedEmployee?.name} disabled fullWidth />
 
             {dialogType === 'bonus' && (
               <>
                 <TextField 
-                  label="Bonus Type" 
+                  label={t('bonusType')} 
                   placeholder="e.g. Performance, Overtime" 
                   fullWidth 
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                 />
                 <TextField 
-                  label="Amount" 
+                  label={t('amount')} 
                   placeholder="0.00" 
                   fullWidth 
                   InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
@@ -639,7 +639,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
                 />
                 <TextField 
-                  label="Date" 
+                  label={t('date')} 
                   type="date" 
                   fullWidth 
                   InputLabelProps={{ shrink: true }} 
@@ -651,11 +651,11 @@ Generated on:   ${new Date().toLocaleDateString()}
 
             {dialogType === 'increase' && (
               <>
-                <TextField label="Current Salary" disabled value={selectedEmployee?.baseSalary} fullWidth />
+                <TextField label={t('currentBaseSalary')} disabled value={selectedEmployee?.baseSalary} fullWidth />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
                     <TextField 
-                      label="Increase Amount" 
+                      label={t('increaseAmount')} 
                       placeholder="0.00" 
                       fullWidth 
                       InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
@@ -665,7 +665,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   </Grid>
                   <Grid size={{ xs: 6 }}>
                     <TextField 
-                      label="Increase %" 
+                      label={t('increasePercent')} 
                       placeholder="0" 
                       fullWidth 
                       InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} 
@@ -675,7 +675,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   </Grid>
                 </Grid>
                 <TextField 
-                  label="New Salary" 
+                  label={t('newSalary')} 
                   placeholder="0.00" 
                   fullWidth 
                   InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
@@ -683,7 +683,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   onChange={(e) => setFormData({...formData, newSalary: e.target.value})}
                 />
                 <TextField 
-                  label="Effective Date" 
+                  label={t('effectiveDate')} 
                   type="date" 
                   fullWidth 
                   InputLabelProps={{ shrink: true }} 
@@ -696,14 +696,14 @@ Generated on:   ${new Date().toLocaleDateString()}
             {dialogType === 'deduction' && (
               <>
                 <TextField 
-                  label="Deduction Type" 
+                  label={t('deductionType')} 
                   placeholder="e.g. Health Insurance" 
                   fullWidth 
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                 />
                 <TextField 
-                  label="Amount" 
+                  label={t('amount')} 
                   placeholder="0.00" 
                   fullWidth 
                   InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
@@ -711,16 +711,16 @@ Generated on:   ${new Date().toLocaleDateString()}
                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
                 />
                 <FormControl fullWidth>
-                  <InputLabel>Frequency</InputLabel>
+                  <InputLabel>{t('frequency')}</InputLabel>
                   <Select 
-                    label="Frequency" 
+                    label={t('frequency')} 
                     value={formData.frequency}
                     onChange={(e) => setFormData({...formData, frequency: e.target.value})}
                   >
-                    <MenuItem value="One-time">One-time</MenuItem>
-                    <MenuItem value="Monthly">Monthly</MenuItem>
-                    <MenuItem value="Quarterly">Quarterly</MenuItem>
-                    <MenuItem value="Annually">Annually</MenuItem>
+                    <MenuItem value="One-time">{t('oneTime')}</MenuItem>
+                    <MenuItem value="Monthly">{t('monthly')}</MenuItem>
+                    <MenuItem value="Quarterly">{t('quarterly')}</MenuItem>
+                    <MenuItem value="Annually">{t('annually')}</MenuItem>
                   </Select>
                 </FormControl>
               </>
@@ -728,8 +728,8 @@ Generated on:   ${new Date().toLocaleDateString()}
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" startIcon={<Save size={16} />} onClick={handleSave}>Save</Button>
+          <Button onClick={handleCloseDialog}>{t('cancel')}</Button>
+          <Button variant="contained" startIcon={<Save size={16} />} onClick={handleSave}>{t('save')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -737,9 +737,9 @@ Generated on:   ${new Date().toLocaleDateString()}
         open={snackbarOpen}
         autoHideDuration={4000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: isRTL ? 'left' : 'right' }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarMessage.includes('Error') || snackbarMessage.includes('هەڵە') ? 'error' : 'success'} sx={{ width: '100%' }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
