@@ -81,10 +81,20 @@ export default function LeaveManagement() {
   };
 
   if (isAdmin) {
-    const totalLeaves = leaveRequests.length;
-    const approvedLeaves = leaveRequests.filter(l => l.status === 'Approved').length;
-    const rejectedLeaves = leaveRequests.filter(l => l.status === 'Rejected').length;
-    const pendingLeaves = leaveRequests.filter(l => l.status === 'Pending').length;
+    const visibleRequests = leaveRequests.filter(req => {
+      if (user?.role === UserRole.DEPT_HEAD) {
+        return req.status === 'Pending Head' || req.status === 'Pending HR' || req.status === 'Approved' || req.status === 'Rejected';
+      }
+      if (user?.role === UserRole.HR_MANAGER || user?.role === UserRole.SUPER_ADMIN) {
+        return req.status === 'Pending HR' || req.status === 'Approved' || req.status === 'Rejected';
+      }
+      return false;
+    });
+
+    const totalLeaves = visibleRequests.length;
+    const approvedLeaves = visibleRequests.filter(l => l.status === 'Approved').length;
+    const rejectedLeaves = visibleRequests.filter(l => l.status === 'Rejected').length;
+    const pendingLeaves = visibleRequests.filter(l => l.status === 'Pending Head' || l.status === 'Pending HR').length;
 
     return (
       <Box sx={{ p: { xs: 2, md: 4 }, pb: { xs: 10, md: 4 } }}>
@@ -152,7 +162,7 @@ export default function LeaveManagement() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {leaveRequests.map((leave) => (
+                {visibleRequests.map((leave) => (
                   <TableRow key={leave.id} hover>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -172,7 +182,7 @@ export default function LeaveManagement() {
                     </TableCell>
                     <TableCell>
                       <Chip 
-                        label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : t('pending')} 
+                        label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : leave.status === 'Pending HR' ? t('pendingHR') : t('pendingHead')} 
                         size="small" 
                         sx={{ 
                           fontWeight: 700, 
@@ -183,9 +193,9 @@ export default function LeaveManagement() {
                       />
                     </TableCell>
                     <TableCell align="right">
-                      {leave.status === 'Pending' ? (
+                      {(leave.status === 'Pending Head' && user?.role === UserRole.DEPT_HEAD) || (leave.status === 'Pending HR' && (user?.role === UserRole.HR_MANAGER || user?.role === UserRole.SUPER_ADMIN)) ? (
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                          <IconButton size="small" color="success" onClick={() => { updateLeaveStatus(leave.id, 'Approved'); setSnackbar({ open: true, message: t('leaveApproved'), severity: 'success' }); }}>
+                          <IconButton size="small" color="success" onClick={() => { updateLeaveStatus(leave.id, leave.status === 'Pending Head' ? 'Pending HR' : 'Approved'); setSnackbar({ open: true, message: t('leaveApproved'), severity: 'success' }); }}>
                             <CheckCircle size={18} />
                           </IconButton>
                           <IconButton size="small" color="error" onClick={() => { updateLeaveStatus(leave.id, 'Rejected'); setSnackbar({ open: true, message: t('leaveRejected'), severity: 'error' }); }}>
@@ -310,7 +320,7 @@ export default function LeaveManagement() {
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : t('pending')} 
+                          label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : leave.status === 'Pending HR' ? t('pendingHR') : t('pendingHead')} 
                           size="small" 
                           sx={{ 
                             fontWeight: 700, 

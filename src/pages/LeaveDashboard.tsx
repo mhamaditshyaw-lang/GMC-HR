@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useLeave } from '../contexts/LeaveContext';
 import { useAuth } from '../contexts/AuthContext';
+import { UserRole } from '../types';
 import { Calendar, Clock, CheckCircle, XCircle, Plus, Filter, Download, MoreVertical, User, PieChart, BarChart2, Activity, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 
@@ -65,7 +66,16 @@ export default function LeaveDashboard() {
   const [tabValue, setTabValue] = useState(0);
 
   const myRequests = leaveRequests.filter(req => req.employeeName === 'Sarah Jenkins');
-  const teamRequests = leaveRequests;
+  
+  const teamRequests = leaveRequests.filter(req => {
+    if (user?.role === UserRole.DEPT_HEAD) {
+      return req.status === 'Pending Head' || req.status === 'Pending HR' || req.status === 'Approved' || req.status === 'Rejected';
+    }
+    if (user?.role === UserRole.HR_MANAGER || user?.role === UserRole.SUPER_ADMIN) {
+      return req.status === 'Pending HR' || req.status === 'Approved' || req.status === 'Rejected';
+    }
+    return false;
+  });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -229,7 +239,7 @@ export default function LeaveDashboard() {
                          </TableCell>
                          <TableCell>
                            <Chip 
-                             label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : t('pending')} 
+                             label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : leave.status === 'Pending HR' ? t('pendingHR') : t('pendingHead')} 
                              size="small" 
                              sx={{ 
                                fontWeight: 700, 
@@ -292,7 +302,7 @@ export default function LeaveDashboard() {
                          </TableCell>
                          <TableCell>
                            <Chip 
-                             label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : t('pending')} 
+                             label={leave.status === 'Approved' ? t('approved') : leave.status === 'Rejected' ? t('rejected') : leave.status === 'Pending HR' ? t('pendingHR') : t('pendingHead')} 
                              size="small" 
                              sx={{ 
                                fontWeight: 700, 
@@ -303,9 +313,9 @@ export default function LeaveDashboard() {
                            />
                          </TableCell>
                          <TableCell align="right">
-                           {leave.status === 'Pending' ? (
+                           {(leave.status === 'Pending Head' && user?.role === UserRole.DEPT_HEAD) || (leave.status === 'Pending HR' && (user?.role === UserRole.HR_MANAGER || user?.role === UserRole.SUPER_ADMIN)) ? (
                              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                               <IconButton size="small" color="success" onClick={() => updateLeaveStatus(leave.id, 'Approved')}>
+                               <IconButton size="small" color="success" onClick={() => updateLeaveStatus(leave.id, leave.status === 'Pending Head' ? 'Pending HR' : 'Approved')}>
                                  <CheckCircle size={18} />
                                </IconButton>
                                <IconButton size="small" color="error" onClick={() => updateLeaveStatus(leave.id, 'Rejected')}>

@@ -32,7 +32,7 @@ const detailedRecords = [
   { id: 1, name: 'Dr. Sarah Connor', role: 'Cardiologist', dept: 'Cardiology', type: 'Annual', start: '2024-06-01', end: '2024-06-15', days: 14, status: 'Approved' },
   { id: 2, name: 'John Smith', role: 'Nurse', dept: 'Emergency', type: 'Sick', start: '2024-06-10', end: '2024-06-12', days: 3, status: 'Approved' },
   { id: 3, name: 'Emily Chen', role: 'Pediatrician', dept: 'Pediatrics', type: 'Maternity', start: '2024-05-01', end: '2024-08-01', days: 90, status: 'Approved' },
-  { id: 4, name: 'Michael Brown', role: 'Surgeon', dept: 'Surgery', type: 'Unpaid', start: '2024-07-01', end: '2024-07-05', days: 5, status: 'Pending' },
+  { id: 4, name: 'Michael Brown', role: 'Surgeon', dept: 'Surgery', type: 'Unpaid', start: '2024-07-01', end: '2024-07-05', days: 5, status: 'Pending Head' },
   { id: 5, name: 'Jessica Davis', role: 'Neurologist', dept: 'Neurology', type: 'Annual', start: '2024-08-10', end: '2024-08-20', days: 10, status: 'Rejected' },
 ];
 

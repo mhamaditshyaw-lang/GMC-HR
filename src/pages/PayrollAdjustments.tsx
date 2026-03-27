@@ -1,37 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Typography, Grid, Card, CardContent, Button, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, TextField, InputAdornment, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert, Divider, SelectChangeEvent } from '@mui/material';
 import { Plus, DollarSign, TrendingUp, TrendingDown, Calendar, Edit, Trash2, X, Save, History, User, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // Mock Data (Initial State)
 const initialEmployees = [
-  { id: 1, name: 'Dr. Sarah Jenkins', role: 'Senior Cardiologist', department: 'Cardiology', baseSalary: '$185,000', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNLMrA2Q9GJBVI25Q-V8ng9tKE_BEWHIvBZHPkFfOXjnOi_DCs_Oj1KFHUHPHgTM8wm_dFOxEo671sX9WVbR6Jt-xAu69SumW9Vo3_M93d0sSbKjB18K61rICj0PPneoRA1hxgCJRvFCDlwa366dky83qo5v9yzEpMOC8AdgSlPbVZVC74ksSEez9QgVplJBSQiqVkY7RFDVbyTMNI94CFuzDYo6FQtr9v-41nf9Zw77_Bb2Rejb-rRw5HVGPxPh8olocGpfx4SF8' },
-  { id: 2, name: 'Dr. Emily Chen', role: 'Senior Resident', department: 'Cardiology', baseSalary: '$110,000', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxdNJwmk758EkbaL7gBPr64a8wFu5TljQXU9fIYj6h2Iu-wTiWif_yfRurTm1t6wQxU4WufdQUfarzUlT6Z8zTcAXQzokPzYuzaqHQF03KUFHfkNAcy8UiWmDgASp92rgk5-0F7UIYZAEsNkAe9mLT5FCqCrHzOxdFW7A6eGSsV6lUK-BKZmRMIaClNWIKAEQHIi3Qyd5AwOd8EoU4NA19e3Po9mo1V5GMPC8LlXmv7CKz7qs_fKIPCOSVjFe_GhwUC8glk474DTQ' },
-  { id: 3, name: 'Mark Wilson', role: 'Registered Nurse', department: 'Nursing', baseSalary: '$75,000', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCRXTq2HqBx3mfSPgjl-5nNlDh9roLTRij3tKMB8SC3EhQNGGta-gt9LAhD0AdYevWXfMSleS-ZIV1st09emj-6Cwg2MncWwmR8Fjst0EpNxVgo179xwCgQQ_BOBJzHGWLuMaPFOik4fDu0XeThEdeQxwJfgdxADZoBD5yYkxyslPRz37MQzEMJThw8wwaf0Tv7srpVda7k22KjuM3w0iUED3IHiDKSxaCn4QAAwtgt8_TQqVwJa4-DDZNCCtHLZtsWtcDDcFM-Vws' },
+  { id: 1, name: 'Dr. Sarah Jenkins', role: 'Senior Cardiologist', department: 'Cardiology', baseSalary: 'IQD 185,000', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNLMrA2Q9GJBVI25Q-V8ng9tKE_BEWHIvBZHPkFfOXjnOi_DCs_Oj1KFHUHPHgTM8wm_dFOxEo671sX9WVbR6Jt-xAu69SumW9Vo3_M93d0sSbKjB18K61rICj0PPneoRA1hxgCJRvFCDlwa366dky83qo5v9yzEpMOC8AdgSlPbVZVC74ksSEez9QgVplJBSQiqVkY7RFDVbyTMNI94CFuzDYo6FQtr9v-41nf9Zw77_Bb2Rejb-rRw5HVGPxPh8olocGpfx4SF8' },
+  { id: 2, name: 'Dr. Emily Chen', role: 'Senior Resident', department: 'Cardiology', baseSalary: 'IQD 110,000', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxdNJwmk758EkbaL7gBPr64a8wFu5TljQXU9fIYj6h2Iu-wTiWif_yfRurTm1t6wQxU4WufdQUfarzUlT6Z8zTcAXQzokPzYuzaqHQF03KUFHfkNAcy8UiWmDgASp92rgk5-0F7UIYZAEsNkAe9mLT5FCqCrHzOxdFW7A6eGSsV6lUK-BKZmRMIaClNWIKAEQHIi3Qyd5AwOd8EoU4NA19e3Po9mo1V5GMPC8LlXmv7CKz7qs_fKIPCOSVjFe_GhwUC8glk474DTQ' },
+  { id: 3, name: 'Mark Wilson', role: 'Registered Nurse', department: 'Nursing', baseSalary: 'IQD 75,000', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCRXTq2HqBx3mfSPgjl-5nNlDh9roLTRij3tKMB8SC3EhQNGGta-gt9LAhD0AdYevWXfMSleS-ZIV1st09emj-6Cwg2MncWwmR8Fjst0EpNxVgo179xwCgQQ_BOBJzHGWLuMaPFOik4fDu0XeThEdeQxwJfgdxADZoBD5yYkxyslPRz37MQzEMJThw8wwaf0Tv7srpVda7k22KjuM3w0iUED3IHiDKSxaCn4QAAwtgt8_TQqVwJa4-DDZNCCtHLZtsWtcDDcFM-Vws' },
 ];
 
 const departments = ['All Departments', 'Cardiology', 'Nursing', 'Pediatrics', 'Surgery'];
 
 const initialBonuses = [
-  { id: 1, employeeId: 1, type: 'Performance', amount: '$1,200', date: '2024-03-15', status: 'Approved' },
-  { id: 2, employeeId: 2, type: 'Overtime', amount: '$500', date: '2024-03-10', status: 'Pending' },
-  { id: 3, employeeId: 1, type: 'Holiday Bonus', amount: '$5,000', date: '2023-12-20', status: 'Paid' },
+  { id: 1, employeeId: 1, type: 'Performance', amount: 'IQD 1,200', date: '2024-03-15', status: 'Approved' },
+  { id: 2, employeeId: 2, type: 'Overtime', amount: 'IQD 500', date: '2024-03-10', status: 'Pending' },
+  { id: 3, employeeId: 1, type: 'Holiday Bonus', amount: 'IQD 5,000', date: '2023-12-20', status: 'Paid' },
 ];
 
 const initialIncreases = [
-  { id: 1, employeeId: 1, currentSalary: '$185,000', increase: '5%', newSalary: '$194,250', effectiveDate: '2024-01-01' },
-  { id: 2, employeeId: 1, currentSalary: '$170,000', increase: '8.8%', newSalary: '$185,000', effectiveDate: '2023-01-01' },
+  { id: 1, employeeId: 1, currentSalary: 'IQD 185,000', increase: '5%', newSalary: 'IQD 194,250', effectiveDate: '2024-01-01' },
+  { id: 2, employeeId: 1, currentSalary: 'IQD 170,000', increase: '8.8%', newSalary: 'IQD 185,000', effectiveDate: '2023-01-01' },
 ];
 
 const initialDeductions = [
-  { id: 2, employeeId: 2, type: 'Loan Repayment', amount: '$200', frequency: 'Monthly', status: 'Active' },
+  { id: 2, employeeId: 2, type: 'Loan Repayment', amount: 'IQD 200', frequency: 'Monthly', status: 'Active' },
 ];
 
 const initialPayrollHistory = [
-  { id: 1, employeeId: 1, period: 'Feb 2024', base: '$15,416', bonus: '$0', deductions: '$1,500', net: '$13,916', status: 'Paid' },
-  { id: 2, employeeId: 1, period: 'Jan 2024', base: '$15,416', bonus: '$0', deductions: '$1,500', net: '$13,916', status: 'Paid' },
-  { id: 3, employeeId: 1, period: 'Dec 2023', base: '$14,166', bonus: '$5,000', deductions: '$1,400', net: '$17,766', status: 'Paid' },
-  { id: 4, employeeId: 2, period: 'Feb 2024', base: '$9,166', bonus: '$500', deductions: '$200', net: '$9,466', status: 'Paid' },
+  { id: 1, employeeId: 1, period: 'Feb 2024', base: 'IQD 15,416', bonus: 'IQD 0', deductions: 'IQD 1,500', net: 'IQD 13,916', status: 'Paid' },
+  { id: 2, employeeId: 1, period: 'Jan 2024', base: 'IQD 15,416', bonus: 'IQD 0', deductions: 'IQD 1,500', net: 'IQD 13,916', status: 'Paid' },
+  { id: 3, employeeId: 1, period: 'Dec 2023', base: 'IQD 14,166', bonus: 'IQD 5,000', deductions: 'IQD 1,400', net: 'IQD 17,766', status: 'Paid' },
+  { id: 4, employeeId: 2, period: 'Feb 2024', base: 'IQD 9,166', bonus: 'IQD 500', deductions: 'IQD 200', net: 'IQD 9,466', status: 'Paid' },
 ];
 
 export default function PayrollAdjustments() {
@@ -44,11 +45,21 @@ export default function PayrollAdjustments() {
 
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number>(1);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.employeeId) {
+      setSelectedEmployeeId(location.state.employeeId);
+    }
+  }, [location.state]);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'bonus' | 'increase' | 'deduction'>('bonus');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  const [slipDialogOpen, setSlipDialogOpen] = useState(false);
+  const [selectedSlip, setSelectedSlip] = useState<typeof payrollHistory[0] | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -142,7 +153,7 @@ export default function PayrollAdjustments() {
         id: editingId || Math.max(...bonuses.map(b => b.id), 0) + 1,
         employeeId: selectedEmployee.id,
         type: formData.type || 'Bonus',
-        amount: `$${formData.amount}`,
+        amount: `IQD ${formData.amount}`,
         date: formData.date,
         status: 'Pending'
       };
@@ -158,7 +169,7 @@ export default function PayrollAdjustments() {
         employeeId: selectedEmployee.id,
         currentSalary: selectedEmployee.baseSalary,
         increase: `${formData.increasePercent}%`,
-        newSalary: `$${formData.newSalary}`,
+        newSalary: `IQD ${formData.newSalary}`,
         effectiveDate: formData.effectiveDate
       };
 
@@ -171,7 +182,7 @@ export default function PayrollAdjustments() {
       // Update employee's base salary
       setEmployees(employees.map(emp => 
         emp.id === selectedEmployee.id 
-          ? { ...emp, baseSalary: `$${formData.newSalary}` } 
+          ? { ...emp, baseSalary: `IQD ${formData.newSalary}` } 
           : emp
       ));
     } else if (dialogType === 'deduction') {
@@ -179,7 +190,7 @@ export default function PayrollAdjustments() {
         id: editingId || Math.max(...deductions.map(d => d.id), 0) + 1,
         employeeId: selectedEmployee.id,
         type: formData.type || 'Deduction',
-        amount: `$${formData.amount}`,
+        amount: `IQD ${formData.amount}`,
         frequency: formData.frequency,
         status: 'Active'
       };
@@ -239,10 +250,10 @@ export default function PayrollAdjustments() {
         id: Math.max(...payrollHistory.map(h => h.id), 0) + 1,
         employeeId: selectedEmployee.id,
         period: new Date().toLocaleString('default', { month: 'short', year: 'numeric' }),
-        base: `$${baseSalary.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-        bonus: `$${totalBonuses.toLocaleString()}`,
-        deductions: `$${totalDeductions.toLocaleString()}`,
-        net: `$${netPay.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+        base: `IQD ${baseSalary.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+        bonus: `IQD ${totalBonuses.toLocaleString()}`,
+        deductions: `IQD ${totalDeductions.toLocaleString()}`,
+        net: `IQD ${netPay.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
         status: 'Paid'
       };
 
@@ -302,44 +313,8 @@ export default function PayrollAdjustments() {
 
   const handleDownloadSlip = (historyItem: typeof payrollHistory[0]) => {
     if (!selectedEmployee) return;
-    
-    try {
-      const slipContent = `
-PAYROLL SLIP
-----------------------------------------
-Employee:   ${selectedEmployee.name}
-ID:         ${selectedEmployee.id}
-Role:       ${selectedEmployee.role}
-Department: ${selectedEmployee.department}
-Period:     ${historyItem.period}
-----------------------------------------
-EARNINGS
-Base Salary:    ${historyItem.base}
-Bonuses:        ${historyItem.bonus}
-
-DEDUCTIONS
-Total Deductions: ${historyItem.deductions}
-----------------------------------------
-NET PAY:        ${historyItem.net}
-----------------------------------------
-Status:         ${historyItem.status}
-Generated on:   ${new Date().toLocaleDateString()}
-      `;
-
-      const blob = new Blob([slipContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Payslip_${selectedEmployee.name.replace(/\s+/g, '_')}_${historyItem.period}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download error:', error);
-      setSnackbarMessage(t('errorDownloadingSlip'));
-      setSnackbarOpen(true);
-    }
+    setSelectedSlip(historyItem);
+    setSlipDialogOpen(true);
   };
 
   return (
@@ -634,7 +609,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   label={t('amount')} 
                   placeholder="0.00" 
                   fullWidth 
-                  InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                  InputProps={{ startAdornment: <InputAdornment position="start">IQD</InputAdornment> }} 
                   value={formData.amount}
                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
                 />
@@ -658,7 +633,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                       label={t('increaseAmount')} 
                       placeholder="0.00" 
                       fullWidth 
-                      InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                      InputProps={{ startAdornment: <InputAdornment position="start">IQD</InputAdornment> }} 
                       value={formData.increaseAmount}
                       onChange={(e) => setFormData({...formData, increaseAmount: e.target.value})}
                     />
@@ -678,7 +653,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   label={t('newSalary')} 
                   placeholder="0.00" 
                   fullWidth 
-                  InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                  InputProps={{ startAdornment: <InputAdornment position="start">IQD</InputAdornment> }} 
                   value={formData.newSalary}
                   onChange={(e) => setFormData({...formData, newSalary: e.target.value})}
                 />
@@ -706,7 +681,7 @@ Generated on:   ${new Date().toLocaleDateString()}
                   label={t('amount')} 
                   placeholder="0.00" 
                   fullWidth 
-                  InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                  InputProps={{ startAdornment: <InputAdornment position="start">IQD</InputAdornment> }} 
                   value={formData.amount}
                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
                 />
@@ -743,6 +718,62 @@ Generated on:   ${new Date().toLocaleDateString()}
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {/* Payslip Dialog */}
+      <Dialog open={slipDialogOpen} onClose={() => setSlipDialogOpen(false)} maxWidth="sm" fullWidth dir={isRTL ? 'rtl' : 'ltr'}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {t('payslip')} - {selectedSlip?.period}
+          <IconButton onClick={() => setSlipDialogOpen(false)} size="small"><X size={20} /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedSlip && selectedEmployee && (
+            <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2, fontFamily: 'monospace' }}>
+              <Typography variant="h6" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold' }}>PAYROLL SLIP</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={1} sx={{ mb: 2 }}>
+                <Grid size={{ xs: 4 }}><Typography variant="body2" fontWeight="bold">Employee:</Typography></Grid>
+                <Grid size={{ xs: 8 }}><Typography variant="body2">{selectedEmployee.name}</Typography></Grid>
+                <Grid size={{ xs: 4 }}><Typography variant="body2" fontWeight="bold">ID:</Typography></Grid>
+                <Grid size={{ xs: 8 }}><Typography variant="body2">{selectedEmployee.id}</Typography></Grid>
+                <Grid size={{ xs: 4 }}><Typography variant="body2" fontWeight="bold">Role:</Typography></Grid>
+                <Grid size={{ xs: 8 }}><Typography variant="body2">{selectedEmployee.role}</Typography></Grid>
+                <Grid size={{ xs: 4 }}><Typography variant="body2" fontWeight="bold">Department:</Typography></Grid>
+                <Grid size={{ xs: 8 }}><Typography variant="body2">{selectedEmployee.department}</Typography></Grid>
+                <Grid size={{ xs: 4 }}><Typography variant="body2" fontWeight="bold">Period:</Typography></Grid>
+                <Grid size={{ xs: 8 }}><Typography variant="body2">{selectedSlip.period}</Typography></Grid>
+              </Grid>
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>EARNINGS</Typography>
+              <Grid container spacing={1} sx={{ mb: 2 }}>
+                <Grid size={{ xs: 6 }}><Typography variant="body2">Base Salary:</Typography></Grid>
+                <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}><Typography variant="body2">{selectedSlip.base}</Typography></Grid>
+                <Grid size={{ xs: 6 }}><Typography variant="body2">Bonuses:</Typography></Grid>
+                <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}><Typography variant="body2">{selectedSlip.bonus}</Typography></Grid>
+              </Grid>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>DEDUCTIONS</Typography>
+              <Grid container spacing={1} sx={{ mb: 2 }}>
+                <Grid size={{ xs: 6 }}><Typography variant="body2">Total Deductions:</Typography></Grid>
+                <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}><Typography variant="body2" color="error.main">-{selectedSlip.deductions}</Typography></Grid>
+              </Grid>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={1} sx={{ mb: 2 }}>
+                <Grid size={{ xs: 6 }}><Typography variant="subtitle1" fontWeight="bold">NET PAY:</Typography></Grid>
+                <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}><Typography variant="subtitle1" fontWeight="bold" color="success.main">{selectedSlip.net}</Typography></Grid>
+              </Grid>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={1}>
+                <Grid size={{ xs: 6 }}><Typography variant="body2" color="text.secondary">Status:</Typography></Grid>
+                <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}><Typography variant="body2" color="text.secondary">{selectedSlip.status}</Typography></Grid>
+                <Grid size={{ xs: 6 }}><Typography variant="body2" color="text.secondary">Generated on:</Typography></Grid>
+                <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}><Typography variant="body2" color="text.secondary">{new Date().toLocaleDateString()}</Typography></Grid>
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSlipDialogOpen(false)}>{t('close')}</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

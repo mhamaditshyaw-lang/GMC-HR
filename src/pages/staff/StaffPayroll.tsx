@@ -3,7 +3,7 @@ import {
   DollarSign, Clock, ShieldAlert, Car, Building, 
   CreditCard, BriefcaseMedical, Landmark, Activity,
   FileText, Download, ChevronRight, HeartPulse, PiggyBank,
-  CheckCircle2, AlertCircle, ArrowRight
+  CheckCircle2, AlertCircle, ArrowRight, ShieldCheck
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -66,7 +66,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass, subtitle }: any) => (
     </div>
     <div>
       <p className="text-sm font-semibold text-slate-500 mb-1">{title}</p>
-      <h3 className="text-3xl font-bold text-slate-900 tracking-tight">${value.toLocaleString()}</h3>
+      <h3 className="text-3xl font-bold text-slate-900 tracking-tight">IQD {value.toLocaleString()}</h3>
       {subtitle && <p className="text-xs font-medium text-slate-400 mt-2">{subtitle}</p>}
     </div>
   </div>
@@ -149,7 +149,7 @@ export default function StaffPayroll() {
               </div>
               <h3 className="text-base font-bold text-slate-900">{t('overtimeAndOnCall')}</h3>
             </div>
-            <span className="text-lg font-bold text-amber-600">+${data.overtimeTotal.toLocaleString()}</span>
+            <span className="text-lg font-bold text-amber-600">+IQD {data.overtimeTotal.toLocaleString()}</span>
           </div>
           
           <div className="space-y-4">
@@ -179,7 +179,7 @@ export default function StaffPayroll() {
               </div>
               <h3 className="text-base font-bold text-slate-900">{t('hospitalAllowances')}</h3>
             </div>
-            <span className="text-lg font-bold text-indigo-600">+${data.allowances.total.toLocaleString()}</span>
+            <span className="text-lg font-bold text-indigo-600">+IQD {data.allowances.total.toLocaleString()}</span>
           </div>
           
           <div className="space-y-4">
@@ -188,21 +188,21 @@ export default function StaffPayroll() {
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                 <span className="text-sm font-medium text-slate-600">{t('nightShiftAllowance')}</span>
               </div>
-              <span className="text-sm font-bold text-slate-900">${data.allowances.nightShift.toLocaleString()}</span>
+              <span className="text-sm font-bold text-slate-900">IQD {data.allowances.nightShift.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
                 <span className="text-sm font-medium text-slate-600">{t('hazardRiskAllowance')}</span>
               </div>
-              <span className="text-sm font-bold text-slate-900">${data.allowances.hazardRisk.toLocaleString()}</span>
+              <span className="text-sm font-bold text-slate-900">IQD {data.allowances.hazardRisk.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                 <span className="text-sm font-medium text-slate-600">{t('transportAllowance')}</span>
               </div>
-              <span className="text-sm font-bold text-slate-900">${data.allowances.transport.toLocaleString()}</span>
+              <span className="text-sm font-bold text-slate-900">IQD {data.allowances.transport.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function StaffPayroll() {
               </div>
               <h3 className="text-base font-bold text-slate-900">{t('deductions')}</h3>
             </div>
-            <span className="text-lg font-bold text-red-600">-${data.deductions.total.toLocaleString()}</span>
+            <span className="text-lg font-bold text-red-600">-IQD {data.deductions.total.toLocaleString()}</span>
           </div>
           
           <div className="space-y-5">
@@ -227,21 +227,21 @@ export default function StaffPayroll() {
                 <Landmark className="w-4 h-4 text-slate-400" />
                 <span className="text-sm font-medium text-slate-600">{t('federalStateTax')}</span>
               </div>
-              <span className="text-sm font-bold text-slate-900">${data.deductions.tax.toLocaleString()}</span>
+              <span className="text-sm font-bold text-slate-900">IQD {data.deductions.tax.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <HeartPulse className="w-4 h-4 text-slate-400" />
                 <span className="text-sm font-medium text-slate-600">{t('healthInsurance')}</span>
               </div>
-              <span className="text-sm font-bold text-slate-900">${data.deductions.healthInsurance.toLocaleString()}</span>
+              <span className="text-sm font-bold text-slate-900">IQD {data.deductions.healthInsurance.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <PiggyBank className="w-4 h-4 text-slate-400" />
                 <span className="text-sm font-medium text-slate-600">{t('retirement401k')}</span>
               </div>
-              <span className="text-sm font-bold text-slate-900">${data.deductions.retirement401k.toLocaleString()}</span>
+              <span className="text-sm font-bold text-slate-900">IQD {data.deductions.retirement401k.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -262,11 +262,11 @@ export default function StaffPayroll() {
               <div className="flex justify-between items-end">
                 <div>
                   <p className="text-xs font-medium text-slate-500 mb-1">{t('remainingBalance')}</p>
-                  <p className="text-2xl font-bold text-slate-900">${data.advances.totalRemaining.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-slate-900">IQD {data.advances.totalRemaining.toLocaleString()}</p>
                 </div>
                 <div className={`text-${isRTL ? 'left' : 'right'}`}>
                   <p className="text-xs font-medium text-slate-500 mb-1">{t('currentMonthEMI')}</p>
-                  <p className="text-sm font-bold text-red-600">-${data.advances.currentEmi.toLocaleString()}</p>
+                  <p className="text-sm font-bold text-red-600">-IQD {data.advances.currentEmi.toLocaleString()}</p>
                 </div>
               </div>
               

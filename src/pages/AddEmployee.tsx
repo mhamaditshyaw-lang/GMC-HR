@@ -556,20 +556,6 @@ export default function AddEmployee() {
           </Box>
         </CardContent>
       </Card>
-
-      <Box sx={{ 
-        mt: 4, p: 2, borderRadius: 2, bgcolor: 'primary.light', 
-        display: 'flex', gap: 2, alignItems: 'flex-start',
-        border: '1px solid', borderColor: 'primary.main', opacity: 0.9
-      }}>
-        <Info size={20} color="#2b7cee" style={{ marginTop: 2 }} />
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}>{t('complianceCheckRequired')}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
-            {t('complianceCheckText')}
-          </Typography>
-        </Box>
-      </Box>
     </Box>
   );
 }

@@ -151,24 +151,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
           )}
         </Box>
         
-        {/* Collapse Toggle Button */}
-        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-          <IconButton 
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            size="small"
-            sx={{ 
-              bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              '&:hover': { bgcolor: 'action.hover' },
-              position: isCollapsed ? 'absolute' : 'relative',
-              ...(isRTL ? { left: isCollapsed ? -12 : 0 } : { right: isCollapsed ? -12 : 0 }),
-              zIndex: 10
-            }}
-          >
-            {isCollapsed ? (isRTL ? <ChevronLeft size={16} /> : <ChevronRight size={16} />) : (isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />)}
-          </IconButton>
-        </Box>
+        {/* Collapse Toggle Button Removed */}
       </Box>
 
       <List sx={{ flex: 1, px: { xs: 1, sm: isCollapsed ? 1 : 2 }, mt: 2, overflowY: 'auto', overflowX: 'hidden' }}>
@@ -182,13 +165,13 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
             <Box key={section.titleKey} sx={{ mb: 1 }}>
               {/* Section Header */}
               <ListItemButton 
-                onClick={() => toggleSection(section.titleKey)}
                 sx={{ 
                   px: { xs: 1, sm: isCollapsed ? 1 : 2 }, 
                   py: 1,
                   borderRadius: 2,
                   justifyContent: isCollapsed ? 'center' : 'space-between',
-                  '&:hover': { bgcolor: 'transparent' }
+                  '&:hover': { bgcolor: 'transparent' },
+                  cursor: 'default'
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -216,13 +199,13 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
                 </Box>
                 {!isCollapsed && (
                   <Box sx={{ color: 'text.disabled', display: 'flex', alignItems: 'center' }}>
-                    {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {/* Removed toggle icon */}
                   </Box>
                 )}
               </ListItemButton>
               
               {/* Section Items */}
-              <Collapse in={isCollapsed ? true : isOpen} timeout="auto" unmountOnExit>
+              <Collapse in={true} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   {filteredItems.map((item) => (
                     <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Box, Grid, Typography, Card, CardContent, Button, Avatar, Chip, LinearProgress, IconButton, Paper, Popover } from '@mui/material';
+import { Box, Grid, Typography, Card, CardContent, Button, Avatar, Chip, LinearProgress, IconButton, Paper } from '@mui/material';
 import { Users, CalendarClock, AlertTriangle, UserPlus, TrendingUp, TrendingDown, Plus, ChevronRight, Phone, MessageSquare } from 'lucide-react';
 import { motion, useMotionValue, useTransform, useSpring } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -139,24 +139,10 @@ const PulsingChip = ({ label, status, mode }: any) => {
   );
 };
 
-// Roster Row Component with Hover Popover
+// Roster Row Component
 const RosterRow = ({ row, mode, t }: any) => {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-
   return (
     <Box 
-      onMouseEnter={handlePopoverOpen}
-      onMouseLeave={handlePopoverClose}
       sx={{ 
         display: 'flex', 
         p: 2, 
@@ -212,44 +198,6 @@ const RosterRow = ({ row, mode, t }: any) => {
           />
         )}
       </Box>
-
-      <Popover
-        sx={{ pointerEvents: 'none' }}
-        open={open}
-        anchorEl={anchorEl}
-        anchorOrigin={{
-          vertical: 'center',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'center',
-          horizontal: 'right',
-        }}
-        onClose={handlePopoverClose}
-        disableRestoreFocus
-        PaperProps={{
-          sx: { 
-            pointerEvents: 'auto', 
-            p: 1, 
-            display: 'flex', 
-            gap: 1, 
-            boxShadow: mode === 'light' ? '0 10px 30px rgba(0,0,0,0.1)' : '0 10px 30px rgba(0,0,0,0.5)',
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            transform: 'translateX(-16px)'
-          }
-        }}
-      >
-        <Box 
-          onMouseEnter={handlePopoverOpen}
-          onMouseLeave={handlePopoverClose}
-          sx={{ display: 'flex', gap: 1 }}
-        >
-          <Button size="small" variant="contained" startIcon={<Phone size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif', boxShadow: 'none' }}>{t('call')}</Button>
-          <Button size="small" variant="outlined" startIcon={<MessageSquare size={14} />} sx={{ textTransform: 'none', borderRadius: 1.5, fontFamily: '"Inter", sans-serif' }}>{t('quickChat')}</Button>
-        </Box>
-      </Popover>
     </Box>
   );
 };
@@ -259,7 +207,7 @@ export default function Dashboard() {
   const { leaveRequests } = useLeave();
   const { mode } = useThemeMode();
   
-  const pendingLeavesCount = leaveRequests.filter(req => req.status === 'Pending').length;
+  const pendingLeavesCount = leaveRequests.filter(req => req.status === 'Pending Head' || req.status === 'Pending HR').length;
 
   const stats = [
     { title: t('activeStaff'), value: '142', change: '+5%', trend: 'up', icon: Users, color: '#6366f1' },

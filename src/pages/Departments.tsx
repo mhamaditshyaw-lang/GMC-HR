@@ -9,7 +9,7 @@ const initialDepartments = [
     head: 'Dr. Sarah Jenkins', 
     staffCount: 42, 
     occupancy: 85, 
-    budget: '$1.2M', 
+    budget: 'IQD 1.2M', 
     icon: <Heart size={24} />, 
     color: '#ef4444',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNLMrA2Q9GJBVI25Q-V8ng9tKE_BEWHIvBZHPkFfOXjnOi_DCs_Oj1KFHUHPHgTM8wm_dFOxEo671sX9WVbR6Jt-xAu69SumW9Vo3_M93d0sSbKjB18K61rICj0PPneoRA1hxgCJRvFCDlwa366dky83qo5v9yzEpMOC8AdgSlPbVZVC74ksSEez9QgVplJBSQiqVkY7RFDVbyTMNI94CFuzDYo6FQtr9v-41nf9Zw77_Bb2Rejb-rRw5HVGPxPh8olocGpfx4SF8'
@@ -19,7 +19,7 @@ const initialDepartments = [
     head: 'Dr. Linda Kim', 
     staffCount: 28, 
     occupancy: 72, 
-    budget: '$950K', 
+    budget: 'IQD 950K', 
     icon: <Brain size={24} />, 
     color: '#8b5cf6',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDsjCCVVt3rMPxIyGeUqMzTyhvVHWF8N5edEwS1ARC08hOYFDTx3-ljAFDT1Bky6AvSog9mrYkpLXsOvQfRSG2xusEElCmD1ULuBfY7VnXVTTc_4O5A7uwQR4T8gZ6Wm-6tR7NC3svMb6rSfJphYLBUwR90nmDg6I5MfVSlm0m-GSM2CZ984NgWQjlHt-HmEQwtTHSpUpVgIsJj4ojvKRdhPze73QwvxHWp9Z9H9_sIapMUL2VXklLCKazbUA8JEa7B5icXwDDp-HA'
@@ -29,7 +29,7 @@ const initialDepartments = [
     head: 'Dr. Marcus Ray', 
     staffCount: 35, 
     occupancy: 94, 
-    budget: '$820K', 
+    budget: 'IQD 820K', 
     icon: <Baby size={24} />, 
     color: '#f59e0b',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXGTXuSXu64yRsCq5WNHf1b-jXHbAEOyfQUh7YLvqRCzLiomW9i8NNT5fN7Cb2JDD1JsTgDEoX0cH8CzQ9Jq1U2gPF7yOFBsA1wAwgPmcasofj3wB_OL7MHmHYzs-TnBBhOZGOG33Ln4j0FR_aAqW1eob2WVNJbNwPTW961AutFOGPpQf3X10huxvPLasGhk70xDFoOI7OJUHDZz-Tjh5g1IJcu5_dwxslSkNjKVJ-XxjxRoJRn6YMzD5khKu3oa-Zu3ZXydpR7i4'
@@ -39,7 +39,7 @@ const initialDepartments = [
     head: 'Dr. James Lee', 
     staffCount: 56, 
     occupancy: 98, 
-    budget: '$2.1M', 
+    budget: 'IQD 2.1M', 
     icon: <Activity size={24} />, 
     color: '#ef4444',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLo-uE5TQiX4CEGqdd7qnwz6NDEoTwCSSDAK9S3rS60llQRCPKEpjBHJVmqSszMDEITfRjZfqrSXmz_FKy4j4R0h5Vyomo1QgpSi_uW7eLf0k7Qt_nBy9jzDo9OCKDE0XQRK4gdcgxMCmmzqGbGasi_21Z7kUL7cagKB-Razght0kN45hPxFBgVOeX__HZnIXEdCscy_UAndP-8Ph_bRUhdOleYeCNstQEosWv9lVR5XuEfXuhFinLeKEqKyfuOPmBljWAQY3-K0Q'
@@ -131,7 +131,7 @@ export default function Departments() {
               <TextField 
                 fullWidth 
                 label="Annual Budget" 
-                placeholder="e.g. $1.5M"
+                placeholder="e.g. IQD 1.5M"
                 value={newDept.budget}
                 onChange={(e) => setNewDept({ ...newDept, budget: e.target.value })}
               />

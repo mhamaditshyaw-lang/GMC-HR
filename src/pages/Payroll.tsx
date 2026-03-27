@@ -75,14 +75,14 @@ const PayslipSlideOver = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: number) => `$${value.toLocaleString()}`}
+                        formatter={(value: number) => `IQD ${value.toLocaleString()}`}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-xs text-slate-500 font-medium">{t('netPay')}</span>
-                    <span className="text-lg font-bold text-slate-900">$630K</span>
+                    <span className="text-lg font-bold text-slate-900">IQD 630K</span>
                   </div>
                 </div>
                 <div className="flex justify-center gap-6 mt-2">
@@ -102,25 +102,25 @@ const PayslipSlideOver = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-slate-600">{t('baseSalaries')}</span>
-                    <span className="text-sm font-semibold text-slate-900">$720,000.00</span>
+                    <span className="text-sm font-semibold text-slate-900">IQD 720,000.00</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-slate-600">{t('overtimeAndOnCall')}</span>
-                    <span className="text-sm font-semibold text-slate-900">$85,000.00</span>
+                    <span className="text-sm font-semibold text-slate-900">IQD 85,000.00</span>
                   </div>
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
                     <span className="text-sm text-slate-600">{t('allowances')}</span>
-                    <span className="text-sm font-semibold text-slate-900">$40,000.00</span>
+                    <span className="text-sm font-semibold text-slate-900">IQD 40,000.00</span>
                   </div>
                   
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
                     <span className="text-sm text-slate-600">{t('taxes')}</span>
-                    <span className="text-sm font-semibold text-red-600">-$125,000.00</span>
+                    <span className="text-sm font-semibold text-red-600">-IQD 125,000.00</span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-base font-bold text-slate-900">{t('totalNetPayout')}</span>
-                    <span className="text-lg font-bold text-emerald-600">$630,000.00</span>
+                    <span className="text-lg font-bold text-emerald-600">IQD 630,000.00</span>
                   </div>
                 </div>
               </div>
@@ -222,7 +222,7 @@ export default function Payroll() {
             </span>
           </div>
           <p className="text-sm font-medium text-slate-500 mb-1">{t('estimatedNetPayout')}</p>
-          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">${totalNetPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">IQD {totalNetPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -296,10 +296,10 @@ export default function Payroll() {
                     <span className="text-sm font-medium text-slate-700">{emp.department}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-slate-700">${emp.base.toLocaleString()}</span>
+                    <span className="text-sm font-medium text-slate-700">IQD {emp.base.toLocaleString()}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-bold text-slate-900">${emp.net.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-slate-900">IQD {emp.net.toLocaleString()}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${
@@ -310,7 +310,7 @@ export default function Payroll() {
                   </td>
                   <td className={`px-6 py-4 ${isRTL ? 'text-left' : 'text-right'}`}>
                     <button 
-                      onClick={() => navigate('/payroll/adjustments')}
+                      onClick={() => navigate('/payroll/adjustments', { state: { employeeId: emp.id } })}
                       className={`text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center gap-1 ${isRTL ? 'mr-auto' : 'ml-auto justify-end'}`}
                     >
                       {t('view')} {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
