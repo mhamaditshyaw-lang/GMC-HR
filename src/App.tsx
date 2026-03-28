@@ -34,6 +34,8 @@ import LeaveDashboard from './pages/LeaveDashboard';
 import LeaveAnalytics from './pages/LeaveAnalytics';
 import StaffProfile from './pages/staff/StaffProfile';
 import Compliance from './pages/Compliance';
+import Login from './pages/Login';
+import ShiftManagement from './pages/ShiftManagement';
 import { useAuth } from './contexts/AuthContext';
 
 function DashboardRouter() {
@@ -60,6 +62,93 @@ function AttendanceRouter() {
   return <Attendance />;
 }
 
+function AppRoutes() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="*" element={<Login />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<DashboardRouter />} />
+        
+        {/* HR and Admin only */}
+        <Route path="staff" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER]}>
+            <StaffDirectory />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="staff/add" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER]}>
+            <AddEmployee />
+          </ProtectedRoute>
+        } />
+
+        {/* Super Admin only */}
+        <Route path="departments" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+            <Departments />
+          </ProtectedRoute>
+        } />
+
+        <Route path="settings" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
+            <Settings />
+          </ProtectedRoute>
+        } />
+
+        <Route path="access-control" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+            <AccessControl />
+          </ProtectedRoute>
+        } />
+
+        {/* Common routes with internal role-based filtering */}
+        <Route path="shifts" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD]}>
+            <ShiftManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="roster" element={<ScheduleRouter />} />
+        <Route path="attendance" element={<AttendanceRouter />} />
+        <Route path="attendance/automation" element={<AttendanceAutomation />} />
+        <Route path="payroll" element={<PayrollRouter />} />
+        <Route path="payroll/adjustments" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER]}>
+            <PayrollAdjustments />
+          </ProtectedRoute>
+        } />
+        <Route path="compliance" element={<Compliance />} />
+
+        {/* Staff Specific Routes */}
+        <Route path="leave" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
+            <LeaveManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="leave-dashboard" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
+            <LeaveDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="leave-analytics" element={
+          <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD]}>
+            <LeaveAnalytics />
+          </ProtectedRoute>
+        } />
+        <Route path="profile" element={<StaffProfile />} />
+      </Route>
+    </Routes>
+  );
+}
+
 export default function App() {
   return (
     <ThemeModeProvider>
@@ -69,74 +158,8 @@ export default function App() {
           <NotificationProvider>
             <LanguageProvider>
               <BrowserRouter>
-                <Routes>
-                <Route path="/" element={<MainLayout />}>
-                  <Route index element={<DashboardRouter />} />
-                  
-                  {/* HR and Admin only */}
-                  <Route path="staff" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER]}>
-                      <StaffDirectory />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="staff/add" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER]}>
-                      <AddEmployee />
-                    </ProtectedRoute>
-                  } />
-  
-                  {/* Super Admin only */}
-                  <Route path="departments" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
-                      <Departments />
-                    </ProtectedRoute>
-                  } />
-  
-                  <Route path="settings" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
-                      <Settings />
-                    </ProtectedRoute>
-                  } />
-  
-                  <Route path="access-control" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
-                      <AccessControl />
-                    </ProtectedRoute>
-                  } />
-  
-                  {/* Common routes with internal role-based filtering */}
-                  <Route path="roster" element={<ScheduleRouter />} />
-                  <Route path="attendance" element={<AttendanceRouter />} />
-                  <Route path="attendance/automation" element={<AttendanceAutomation />} />
-                  <Route path="payroll" element={<PayrollRouter />} />
-                  <Route path="payroll/adjustments" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER]}>
-                      <PayrollAdjustments />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="compliance" element={<Compliance />} />
-  
-                  {/* Staff Specific Routes */}
-                  <Route path="leave" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
-                      <LeaveManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="leave-dashboard" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF]}>
-                      <LeaveDashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="leave-analytics" element={
-                    <ProtectedRoute allowedRoles={[UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD]}>
-                      <LeaveAnalytics />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="profile" element={<StaffProfile />} />
-                </Route>
-              </Routes>
-            </BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
             </LanguageProvider>
           </NotificationProvider>
         </LeaveProvider>

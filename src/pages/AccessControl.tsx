@@ -174,7 +174,7 @@ export default function AccessControl() {
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setOpen(false)} color="inherit">{t('logout')}</Button>
+          <Button onClick={() => setOpen(false)} color="inherit">{t('cancel')}</Button>
           <Button variant="contained" onClick={handleCreateUser}>{t('createUser')}</Button>
         </DialogActions>
       </Dialog>

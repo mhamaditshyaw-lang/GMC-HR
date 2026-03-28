@@ -30,10 +30,12 @@ import {
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useThemeMode } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Settings() {
   const { t } = useLanguage();
   const { mode, primaryColor, toggleTheme, setPrimaryColor } = useThemeMode();
+  const { logout } = useAuth();
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
 
   const themes = [
@@ -209,7 +211,7 @@ export default function Settings() {
               </Card>
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                <Button variant="text" color="inherit">{t('logout')}</Button>
+                <Button variant="text" color="inherit" onClick={logout}>{t('logout')}</Button>
                 <Button variant="contained" startIcon={<Save size={18} />} onClick={handleSave}>
                   {t('saveChanges')}
                 </Button>

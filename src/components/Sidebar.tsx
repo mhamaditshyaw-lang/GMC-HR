@@ -32,7 +32,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
   const navigate = useNavigate();
   const location = useLocation();
   const { t, language, setLanguage, isRTL } = useLanguage();
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   const { mode } = useThemeMode();
   
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -79,6 +79,7 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
       titleKey: 'menuOperations',
       icon: <Clock size={20} />,
       items: [
+        { text: 'Shifts', key: 'shiftManagement', icon: <Clock size={20} />, path: '/shifts', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD] },
         { text: 'Attendance', key: 'attendance', icon: <Clock size={20} />, path: '/attendance', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD] },
         { text: 'Automation', key: 'attendanceAutomation', icon: <Bot size={20} />, path: '/attendance/automation', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER] },
         { text: 'Schedules', key: 'schedules', icon: <CalendarDays size={20} />, path: '/roster', roles: [UserRole.SUPER_ADMIN, UserRole.HR_MANAGER, UserRole.DEPT_HEAD, UserRole.STAFF] },
@@ -311,10 +312,15 @@ export default function Sidebar({ onMobileClose }: { onMobileClose?: () => void 
             sx={{ width: { xs: 32, sm: 32 }, height: { xs: 32, sm: 32 } }}
           />
           {!isCollapsed && (
-            <Box sx={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <Box sx={{ overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{user?.name}</Typography>
               <Typography variant="caption" color="text.secondary" noWrap>{user?.role.replace('_', ' ')}</Typography>
             </Box>
+          )}
+          {!isCollapsed && (
+            <IconButton size="small" color="error" onClick={() => logout()} title={t('logout')}>
+              <LogOut size={18} />
+            </IconButton>
           )}
         </Box>
       </Box>

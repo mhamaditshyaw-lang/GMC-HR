@@ -45,8 +45,8 @@ const MOCK_USERS: Record<UserRole, User> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Default to Super Admin for now so the app doesn't break
-  const [user, setUser] = useState<User | null>(MOCK_USERS[UserRole.SUPER_ADMIN]);
+  // Start with no user logged in
+  const [user, setUser] = useState<User | null>(null);
 
   const login = (role: UserRole) => {
     setUser(MOCK_USERS[role]);
