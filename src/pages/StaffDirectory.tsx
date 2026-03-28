@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Grid, Card, CardContent, Avatar, Chip, Button, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, Pagination } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Avatar, Chip, Button, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, Pagination, useMediaQuery, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { Search, Plus, Filter, LayoutGrid, List as ListIcon, Heart, Stethoscope, Brain, Baby, MoreVertical, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -18,6 +18,8 @@ const staffRows = [
 export default function StaffDirectory() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const columns: GridColDef[] = [
@@ -87,7 +89,7 @@ export default function StaffDirectory() {
         </Button>
       </Box>
 
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+      <Box sx={{ mb: 4, display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end', gap: 1 }}>
         <Button 
           size="small" 
           variant={viewMode === 'grid' ? 'contained' : 'text'} 
@@ -107,23 +109,27 @@ export default function StaffDirectory() {
       </Box>
 
       {viewMode === 'list' ? (
-        <Card sx={{ height: 500, width: '100%' }}>
-          <DataGrid
-            rows={staffRows}
-            columns={columns}
-            slots={{ toolbar: GridToolbar }}
-            slotProps={{
-              toolbar: { showQuickFilter: true }
-            }}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10 } },
-            }}
-            pageSizeOptions={[5, 10, 25]}
-            disableRowSelectionOnClick
-            sx={{ border: 'none' }}
-          />
-        </Card>
-      ) : (
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <Card sx={{ height: 500, width: '100%' }}>
+            <DataGrid
+              rows={staffRows}
+              columns={columns}
+              slots={{ toolbar: GridToolbar }}
+              slotProps={{
+                toolbar: { showQuickFilter: true }
+              }}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 10 } },
+              }}
+              pageSizeOptions={[5, 10, 25]}
+              disableRowSelectionOnClick
+              sx={{ border: 'none' }}
+            />
+          </Card>
+        </Box>
+      ) : null}
+
+      {viewMode === 'grid' || (viewMode === 'list' && isMobile) ? (
         <Grid container spacing={3}>
           {staffRows.map((person, index) => (
             <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={person.name}>
@@ -184,14 +190,14 @@ export default function StaffDirectory() {
             </Grid>
           ))}
         </Grid>
-      )}
+      ) : null}
 
-      {viewMode === 'grid' && (
-        <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {(viewMode === 'grid' || isMobile) && (
+        <Box sx={{ mt: 6, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
             {t('showing')} <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>1</Box> {t('to')} <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>6</Box> {t('of')} <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>248</Box> {t('results')}
           </Typography>
-          <Pagination count={42} color="primary" shape="rounded" />
+          <Pagination count={42} color="primary" shape="rounded" size="small" siblingCount={0} />
         </Box>
       )}
     </Box>

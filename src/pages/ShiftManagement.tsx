@@ -23,9 +23,12 @@ import {
   FormControl,
   OutlinedInput,
   SelectChangeEvent,
-  useTheme
+  useTheme,
+  List,
+  ListItem,
+  ListItemText
 } from '@mui/material';
-import { Plus, Edit2, Trash2, Clock } from 'lucide-react';
+import { Plus, Edit2, Trash2, Clock, Building2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // Mock departments
@@ -58,8 +61,11 @@ export default function ShiftManagement() {
   const { t } = useLanguage();
   const theme = useTheme();
   const [shifts, setShifts] = useState<Shift[]>(INITIAL_SHIFTS);
+  const [departmentsList, setDepartmentsList] = useState<string[]>(DEPARTMENTS);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
+  const [newDepartmentName, setNewDepartmentName] = useState('');
+  const [isAddingDepartment, setIsAddingDepartment] = useState(false);
   
   const [formData, setFormData] = useState<Omit<Shift, 'id'>>({
     name: '',
@@ -121,6 +127,22 @@ export default function ShiftManagement() {
     });
   };
 
+  const handleAddDepartment = () => {
+    if (newDepartmentName.trim() && !departmentsList.includes(newDepartmentName.trim())) {
+      setDepartmentsList([...departmentsList, newDepartmentName.trim()]);
+      setNewDepartmentName('');
+    }
+  };
+
+  const handleDeleteDepartment = (deptToDelete: string) => {
+    setDepartmentsList(departmentsList.filter(d => d !== deptToDelete));
+    // Also remove from any shifts that have it assigned
+    setShifts(shifts.map(shift => ({
+      ...shift,
+      departments: shift.departments.filter(d => d !== deptToDelete)
+    })));
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -133,14 +155,24 @@ export default function ShiftManagement() {
             Manage work shifts and assign them to departments
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<Plus size={20} />}
-          onClick={() => handleOpenDialog()}
-          sx={{ borderRadius: 2, px: 3 }}
-        >
-          {t('addShift')}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            variant="outlined" 
+            startIcon={<Building2 size={20} />}
+            onClick={() => setIsAddingDepartment(true)}
+            sx={{ borderRadius: 2, px: 3 }}
+          >
+            {t('manageDepartments')}
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<Plus size={20} />}
+            onClick={() => handleOpenDialog()}
+            sx={{ borderRadius: 2, px: 3 }}
+          >
+            {t('addShift')}
+          </Button>
+        </Box>
       </Box>
 
       <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: theme.shadows[2] }}>
@@ -232,7 +264,7 @@ export default function ShiftManagement() {
 
             <FormControl fullWidth>
               <InputLabel id="departments-label">{t('assignedDepartments')}</InputLabel>
-              <Select
+              <Select<string[]>
                 labelId="departments-label"
                 multiple
                 value={formData.departments}
@@ -246,7 +278,7 @@ export default function ShiftManagement() {
                   </Box>
                 )}
               >
-                {DEPARTMENTS.map((name) => (
+                {departmentsList.map((name) => (
                   <MenuItem key={name} value={name}>
                     {name}
                   </MenuItem>
@@ -265,6 +297,63 @@ export default function ShiftManagement() {
             disabled={!formData.name || !formData.startTime || !formData.endTime || formData.departments.length === 0}
           >
             {editingShift ? t('saveChanges') : t('createShift')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={isAddingDepartment} onClose={() => { setIsAddingDepartment(false); setNewDepartmentName(''); }} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {t('manageDepartments')}
+        </DialogTitle>
+        <DialogContent dividers>
+          <List sx={{ mb: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+            {departmentsList.map(dept => (
+              <ListItem 
+                key={dept} 
+                secondaryAction={
+                  <IconButton edge="end" color="error" onClick={() => handleDeleteDepartment(dept)}>
+                    <Trash2 size={18} />
+                  </IconButton>
+                }
+                sx={{ borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 'none' } }}
+              >
+                <ListItemText primary={dept} />
+              </ListItem>
+            ))}
+            {departmentsList.length === 0 && (
+              <ListItem>
+                <ListItemText primary={t('noShifts')} sx={{ color: 'text.secondary', textAlign: 'center' }} />
+              </ListItem>
+            )}
+          </List>
+          
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 3 }}>
+            <TextField
+              size="small"
+              label={t('addDepartment')}
+              value={newDepartmentName}
+              onChange={(e) => setNewDepartmentName(e.target.value)}
+              fullWidth
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddDepartment();
+                }
+              }}
+            />
+            <Button 
+              onClick={handleAddDepartment} 
+              variant="contained"
+              disabled={!newDepartmentName.trim()}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t('add')}
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => { setIsAddingDepartment(false); setNewDepartmentName(''); }} color="inherit">
+            {t('cancel')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, Avatar, Chip, List, ListItem, ListItemText, Divider, LinearProgress, Button } from '@mui/material';
-import { Calendar, Clock, Bell, Umbrella, Thermometer, MapPin, CalendarClock, AlertTriangle, ChevronRight, CreditCard, Users } from 'lucide-react';
+import { Box, Typography, Grid, Card, CardContent, Avatar, Chip } from '@mui/material';
+import { Clock, Umbrella, CalendarClock, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,7 +33,7 @@ export default function StaffDashboard() {
       {/* App Header Section - Native App Style */}
       <Box sx={{ mb: 3, display: { xs: 'block', md: 'none' } }}>
         <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.04em', color: 'text.primary' }}>
-          {t('welcome')}, Sarah
+          {t('hello')}, Sarah
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
           Wednesday, Feb 25
@@ -42,41 +42,7 @@ export default function StaffDashboard() {
 
       <motion.div variants={containerVariants} initial="hidden" animate="visible">
         <Grid container spacing={2.5}>
-          {/* Expiration Alert - Mock Logic */}
-          <Grid size={{ xs: 12 }}>
-            <motion.div variants={itemVariants}>
-              <Card sx={{ 
-                bgcolor: 'warning.light', 
-                border: '1px solid',
-                borderColor: 'warning.main',
-                borderRadius: 4,
-                boxShadow: 'none'
-              }}>
-                <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ p: 1, bgcolor: 'warning.main', borderRadius: 2, color: 'white' }}>
-                    <AlertTriangle size={20} />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'warning.dark' }}>
-                      License Expiring Soon
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'warning.dark', fontWeight: 500 }}>
-                      Your Board Certification expires in 28 days. Please update it.
-                    </Typography>
-                  </Box>
-                  <Button 
-                    size="small" 
-                    variant="contained" 
-                    color="warning" 
-                    sx={{ borderRadius: 2, fontWeight: 700, fontSize: 11 }}
-                    onClick={() => navigate('/profile')}
-                  >
-                    Update
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
+          {/* Main Dashboard Content */}
 
           {/* Upcoming Shift Card - Native App Style */}
           <Grid size={{ xs: 12, md: 6 }}>
@@ -86,57 +52,58 @@ export default function StaffDashboard() {
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <Card sx={{ 
-                borderRadius: 6, 
+                borderRadius: '40px', 
                 border: 'none',
                 boxShadow: '0 10px 25px -5px rgba(43, 124, 238, 0.15)',
                 background: 'linear-gradient(135deg, #2b7cee 0%, #1e40af 100%)',
                 color: 'white',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                py: 2
               }}>
                 {/* Decorative Circle */}
                 <Box sx={{ 
                   position: 'absolute', top: -20, right: -20, 
-                  width: 120, height: 120, borderRadius: '50%', 
-                  bgcolor: 'rgba(255,255,255,0.1)', zIndex: 0 
+                  width: 150, height: 150, borderRadius: '50%', 
+                  bgcolor: 'rgba(255,255,255,0.05)', zIndex: 0 
                 }} />
                 
-                <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+                <CardContent sx={{ p: 3, position: 'relative', zIndex: 1, textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-                    <Box sx={{ p: 1.5, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 4 }}>
+                    <Chip 
+                      label={t('upcoming')} 
+                      size="small" 
+                      sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 700, fontSize: 11, px: 1 }} 
+                    />
+                    <Box sx={{ p: 1.5, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }}>
                       <CalendarClock size={24} />
                     </Box>
-                    <Chip 
-                      label="Upcoming" 
-                      size="small" 
-                      sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 700, fontSize: 10 }} 
-                    />
                   </Box>
                   
-                  <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-0.02em' }}>
-                    08:00 - 16:00
+                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, letterSpacing: '-0.02em', fontSize: '2.5rem' }}>
+                    16:00 - 08:00
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 600, mb: 3 }}>
-                    ICU - Ward 4A • Today
+                  <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 600, mb: 4 }}>
+                    ICU - Ward 4A • {t('today')}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                    <Box sx={{ display: 'flex', ml: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.9, fontSize: 12 }}>
+                      {t('colleaguesOnShift')} 4+
+                    </Typography>
+                    <Box sx={{ display: 'flex' }}>
                       {[1, 2, 3].map((i) => (
                         <Avatar 
                           key={i}
                           src={`https://i.pravatar.cc/150?u=${i + 10}`} 
                           sx={{ 
-                            width: 28, height: 28, 
-                            border: '2px solid #2b7cee',
-                            ml: i === 1 ? 0 : -1
+                            width: 32, height: 32, 
+                            border: '2px solid #1e40af',
+                            ml: i === 1 ? 0 : -1.5
                           }} 
                         />
                       ))}
                     </Box>
-                    <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.9 }}>
-                      +4 colleagues on shift
-                    </Typography>
                   </Box>
                 </CardContent>
               </Card>
@@ -147,124 +114,49 @@ export default function StaffDashboard() {
           <Grid size={{ xs: 12 }}>
             <Box sx={{ 
               display: 'flex', 
+              justifyContent: 'space-between',
               gap: 2, 
-              overflowX: 'auto', 
-              pb: 1, 
-              mx: { xs: -2, md: 0 }, 
-              px: { xs: 2, md: 0 }, 
-              scrollbarWidth: 'none', 
-              '&::-webkit-scrollbar': { display: 'none' } 
+              mt: 2,
+              mb: 2
             }}>
               {[
-                { label: 'Clock In', icon: <Clock size={20} />, color: '#10b981', path: '/attendance' },
-                { label: 'Swap Shift', icon: <Users size={20} />, color: '#f59e0b', path: '/roster' },
-                { label: 'Request Leave', icon: <Umbrella size={20} />, color: '#ef4444', path: '/leave' },
-                { label: 'Payslip', icon: <CreditCard size={20} />, color: '#8b5cf6', path: '/payroll' }
+                { label: t('requestLeave'), icon: <Umbrella size={24} />, color: '#ef4444', path: '/leave' },
+                { label: t('swapShift'), icon: <Users size={24} />, color: '#f59e0b', path: '/roster' },
+                { label: t('clockIn'), icon: <Clock size={24} />, color: '#10b981', path: '/attendance' }
               ].map((action) => (
                 <Box 
                   key={action.label}
                   onClick={() => navigate(action.path)}
                   sx={{ 
-                    flexShrink: 0, 
-                    width: 100, 
-                    p: 2, 
-                    bgcolor: 'background.paper', 
-                    borderRadius: 5, 
-                    textAlign: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
                     cursor: 'pointer'
                   }}
                 >
                   <Box sx={{ 
-                    width: 44, height: 44, borderRadius: 3, 
-                    bgcolor: `${action.color}15`, color: action.color,
+                    width: 72, height: 72, borderRadius: '50%', 
+                    bgcolor: 'background.paper', color: action.color,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    mx: 'auto', mb: 1
+                    mb: 1.5,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    border: '1px solid',
+                    borderColor: 'divider'
                   }}>
                     {action.icon}
                   </Box>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', lineHeight: 1.2 }}>
-                    {action.label}
+                  <Typography variant="caption" sx={{ fontWeight: 700, textAlign: 'center', lineHeight: 1.2, color: 'text.secondary' }}>
+                    {action.label.split(' ').map((word, i) => (
+                      <React.Fragment key={i}>
+                        {word}
+                        {i < action.label.split(' ').length - 1 && <br />}
+                      </React.Fragment>
+                    ))}
                   </Typography>
                 </Box>
               ))}
             </Box>
-          </Grid>
-
-          {/* Leave Balances - Native App Style */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <motion.div variants={itemVariants}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', mb: 2, px: 0.5, textTransform: 'uppercase', letterSpacing: 1 }}>
-                {t('leaveBalances')}
-              </Typography>
-              <Grid container spacing={2}>
-                {[
-                  { label: t('annualLeave'), value: 12, total: 20, color: '#2b7cee' },
-                  { label: t('sickLeave'), value: 5, total: 10, color: '#ef4444' }
-                ].map((leave) => (
-                  <Grid size={{ xs: 6 }} key={leave.label}>
-                    <Card sx={{ borderRadius: 5, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', bgcolor: 'background.paper' }}>
-                      <CardContent sx={{ p: 2.5 }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 1 }}>
-                          {leave.label}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 1.5 }}>
-                          <Typography variant="h5" sx={{ fontWeight: 900, color: leave.color }}>{leave.value}</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>/ {leave.total} days</Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={(leave.value / leave.total) * 100} 
-                          sx={{ 
-                            height: 6, borderRadius: 3, bgcolor: `${leave.color}15`,
-                            '& .MuiLinearProgress-bar': { bgcolor: leave.color, borderRadius: 3 }
-                          }} 
-                        />
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </motion.div>
-          </Grid>
-
-          {/* Announcements - Native App Style */}
-          <Grid size={{ xs: 12 }}>
-            <motion.div variants={itemVariants}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, px: 0.5 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>
-                  {t('announcements')}
-                </Typography>
-                <Button size="small" sx={{ fontWeight: 700, color: 'primary.main' }}>{t('viewAll')}</Button>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {[
-                  { title: 'New Safety Protocols', date: '2h ago', type: 'Urgent' },
-                  { title: 'Staff Cafeteria Update', date: '5h ago', type: 'Info' }
-                ].map((item, i) => (
-                  <Box key={i} sx={{ 
-                    p: 2, bgcolor: 'background.paper', borderRadius: 5, 
-                    display: 'flex', alignItems: 'center', gap: 2,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-                    cursor: 'pointer'
-                  }}>
-                    <Box sx={{ 
-                      width: 40, height: 40, borderRadius: 2.5, 
-                      bgcolor: item.type === 'Urgent' ? 'error.light' : 'info.light',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      opacity: 0.8
-                    }}>
-                      <AlertTriangle size={20} color={item.type === 'Urgent' ? '#ef4444' : '#2b7cee'} />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>{item.title}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>{item.date}</Typography>
-                    </Box>
-                    <ChevronRight size={18} color="text.secondary" />
-                  </Box>
-                ))}
-              </Box>
-            </motion.div>
           </Grid>
         </Grid>
       </motion.div>

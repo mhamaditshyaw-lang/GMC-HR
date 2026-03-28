@@ -62,7 +62,7 @@ export default function Login() {
 
         <Grid container spacing={3}>
           {ACCOUNTS.map((account) => (
-            <Grid item xs={12} sm={6} key={account.role}>
+            <Grid size={{ xs: 12, sm: 6 }} key={account.role}>
               <Card 
                 sx={{ 
                   p: 3, 

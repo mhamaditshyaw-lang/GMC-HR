@@ -9,6 +9,7 @@ import { UserRole } from '../types';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { useThemeMode } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Sun, Moon } from 'lucide-react';
 
 export default function MainLayout() {
@@ -16,6 +17,7 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { mode, toggleTheme } = useThemeMode();
+  const { t } = useLanguage();
   const isStaff = user?.role === UserRole.STAFF;
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -149,14 +151,14 @@ export default function MainLayout() {
             top: 0,
             zIndex: 1100
           }}>
-            <IconButton size="small" onClick={() => navigate('/profile')}>
-              <Avatar src={user?.avatar} sx={{ width: 32, height: 32 }} />
-            </IconButton>
-            <Typography variant="subtitle1" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: mode === 'light' ? 'text.primary' : 'white' }}>
-              HCPA Staff
-            </Typography>
             <IconButton size="small" onClick={toggleTheme} sx={{ color: mode === 'light' ? 'text.secondary' : 'white' }}>
               {mode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </IconButton>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: mode === 'light' ? 'text.primary' : 'white' }}>
+              {t('hcpaStaff')}
+            </Typography>
+            <IconButton size="small" onClick={() => navigate('/profile')}>
+              <Avatar src={user?.avatar} sx={{ width: 32, height: 32 }} />
             </IconButton>
           </Box>
         )}
